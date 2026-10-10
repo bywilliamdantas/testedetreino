@@ -1,0 +1,181 @@
+import { SCHEMA_VERSION } from "./data/constants.js";
+import { newSessionId } from "./utils/ids.js";
+import { parseNum } from "./utils/numbers.js";
+
+export function migrateSessionEntry(entry) {
+  if (!entry) return null;
+  if (typeof entry === "string") return {
+    letter: entry,
+    log: {}
+  };
+  if (!entry.log) entry.log = {};
+  Object.keys(entry.log).forEach(exId => {
+    const v = entry.log[exId];
+    if (v && !Array.isArray(v)) {
+      const weight = v.weight;
+      const reps = v.reps;
+      const hasAny = weight !== "" && weight != null || reps !== "" && reps != null;
+      entry.log[exId] = hasAny ? [{
+        weight: parseNum(weight),
+        reps: parseNum(reps),
+        done: true
+      }] : [];
+    }
+    if (!Array.isArray(entry.log[exId])) entry.log[exId] = [];
+  });
+  return entry;
+}
+
+export function migrateSessions(s) {
+  if (!s.sessions) {
+    s.sessions = {};
+    return;
+  }
+  Object.keys(s.sessions).forEach(k => {
+    const v = s.sessions[k];
+    if (Array.isArray(v)) {
+      v.forEach(sess => {
+        if (sess && !sess.id) sess.id = newSessionId();
+        if (sess && !sess.log) sess.log = {};
+        Object.keys(sess.log || {}).forEach(exId => {
+          if (!Array.isArray(sess.log[exId])) sess.log[exId] = [];
+        });
+      });
+      return;
+    }
+    const migrated = migrateSessionEntry(v);
+    const session = {
+      id: newSessionId(),
+      letter: migrated?.letter || null,
+      log: migrated?.log || {},
+      startedAt: migrated?.startedAt || null,
+      endedAt: migrated?.endedAt || null
+    };
+    s.sessions[k] = [session];
+  });
+}
+
+/* Treinos já registrados ganham uma "foto" do treino (nomes e tipos) para que
+   editar ou apagar exercícios depois não mude o que foi salvo. O log (séries)
+   nunca é tocado aqui. */
+export function migrateSessionSnapshots(s) {
+  if (!s.sessions || !s.workouts) return;
+  Object.keys(s.sessions).forEach(k => {
+    const arr = s.sessions[k];
+    if (!Array.isArray(arr)) return;
+    arr.forEach(sess => {
+      if (!sess || sess.snapshot || !sess.log) return;
+      const ids = new Set(Object.keys(sess.log).filter(id => Array.isArray(sess.log[id]) && sess.log[id].length));
+      if (!ids.size) return;
+      const w = s.workouts[sess.letter];
+      if (!w || w.isRest) return;
+      const snap = (w.exercises || []).filter(ex => ids.has(ex.id)).map(ex => ({
+        id: ex.id,
+        name: ex.name || "",
+        type: ex.type || "strength",
+        ...(ex.group ? {
+          group: ex.group
+        } : {}),
+        ...(ex.sets !== undefined ? {
+          sets: ex.sets
+        } : {}),
+        ...(ex.reps !== undefined ? {
+          reps: ex.reps
+        } : {}),
+        ...(ex.rest !== undefined ? {
+          rest: ex.rest
+        } : {}),
+        ...(ex.mins !== undefined ? {
+          mins: ex.mins
+        } : {})
+      }));
+      if (snap.length) sess.snapshot = snap;
+    });
+  });
+}
+
+/* Foto de perfil "inline" (data URL dentro de settings.avatarUrl) é o formato
+   até a v8.1 e ainda aparece em arquivos exportados. Esta função só LÊ: quem
+   limpa o campo é src/storage (depois de confirmar a gravação no IndexedDB). */
+export function inlineAvatarOf(s) {
+  const v = s && s.settings && s.settings.avatarUrl;
+  return typeof v === "string" && v ? v : null;
+}
+
+export function migrateSettings(s) {
+  if (!s.settings) s.settings = {};
+  const d = {
+    reminder: {
+      enabled: false,
+      time: "18:00",
+      lastNotifiedDate: null
+    },
+    lastBackupAt: null,
+    workoutsCollapsed: false,
+    restDuration: 90,
+    weekStartsMonday: false,
+    weeklyGoal: null,
+    restTimerActive: null
+  };
+  if (!s.settings.reminder) s.settings.reminder = {
+    ...d.reminder
+  };
+  if (s.settings.reminder.enabled === undefined) s.settings.reminder.enabled = false;
+  if (!s.settings.reminder.time) s.settings.reminder.time = "18:00";
+  if (s.settings.reminder.lastNotifiedDate === undefined) s.settings.reminder.lastNotifiedDate = null;
+  if (s.settings.lastBackupAt === undefined) s.settings.lastBackupAt = null;
+  if (s.settings.workoutsCollapsed === undefined) s.settings.workoutsCollapsed = false;
+  if (!s.settings.collapsedSections || typeof s.settings.collapsedSections !== "object" || Array.isArray(s.settings.collapsedSections)) {
+    s.settings.collapsedSections = s.settings.workoutsCollapsed ? {
+      workouts: true
+    } : {};
+  }
+  if (s.settings.restDuration === undefined) s.settings.restDuration = 90;
+  if (s.settings.weekStartsMonday === undefined) s.settings.weekStartsMonday = false;
+  /* null = usar o padrão (treinos não-descanso do ciclo); número = meta escolhida em Ajustes → Treino */
+  if (s.settings.weeklyGoal === undefined) s.settings.weeklyGoal = null;
+  else if (s.settings.weeklyGoal !== null) {
+    const g = Math.round(Number(s.settings.weeklyGoal));
+    s.settings.weeklyGoal = Number.isFinite(g) && g >= 1 ? Math.min(14, g) : null;
+  }
+  if (s.settings.restTimerActive === undefined) s.settings.restTimerActive = null;
+  if (s.settings.unit !== "kg" && s.settings.unit !== "lb") s.settings.unit = "kg";
+  if (s.settings.keepAwake === undefined) s.settings.keepAwake = true;
+  /* som (beep) ao fim do descanso; ligado por padrão */
+  if (typeof s.settings.beepEnabled !== "boolean") s.settings.beepEnabled = true;
+  if (s.settings.avatarUrl === undefined) s.settings.avatarUrl = null;
+  if (s.settings.displayName === undefined) s.settings.displayName = "";
+}
+
+export function migrateActiveSession(s) {
+  if (!s.activeSession || typeof s.activeSession !== "object") {
+    s.activeSession = {
+      letter: null,
+      state: "idle",
+      elapsedMs: 0,
+      startedAt: null,
+      startedDate: null
+    };
+  }
+  const a = s.activeSession;
+  if (!("letter" in a)) a.letter = null;
+  if (!("state" in a)) a.state = "idle";
+  if (!("elapsedMs" in a)) a.elapsedMs = 0;
+  if (!("startedAt" in a)) a.startedAt = null;
+  if (!("startedDate" in a)) a.startedDate = null;
+}
+
+export function migrateWorkouts(w) {
+  if (!w) return;
+  Object.values(w.workouts || {}).forEach(wk => {
+    (wk.exercises || []).forEach(ex => {
+      if (!ex.type) ex.type = "strength";
+    });
+  });
+  if (!Array.isArray(w.body)) w.body = [];
+  w.body = w.body.filter(b => b && typeof b === "object" && /^\d{4}-\d{2}-\d{2}$/.test(b.date || ""));
+  w.body.forEach(b => {
+    if (!b.id) b.id = "b" + Math.random().toString(36).slice(2, 9);
+  });
+  w.schemaVersion = SCHEMA_VERSION;
+}
