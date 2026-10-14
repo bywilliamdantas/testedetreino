@@ -179,6 +179,8 @@ test("migrateSettings: dados antigos recebem todos os padrões", () => {
   assert.deepEqual(s.settings, {
     reminder: { enabled: false, time: "18:00", lastNotifiedDate: null },
     lastBackupAt: null,
+    backupEvery: 7,
+    backupSnoozedUntil: null,
     workoutsCollapsed: false,
     collapsedSections: {},
     restDuration: 90,

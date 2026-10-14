@@ -117,6 +117,8 @@ if (SCEN === "live-active") {
 if (SCEN === "pin") {
   await goAjustes();
   check("linha 'PIN de acesso' em Ajustes → Conta", !!$("#pinRowBtn"));
+  check("Ajustes avisa que o lembrete só aparece com o app aberto", /só aparece com o app aberto/.test($("#reminderHint")?.textContent || ""));
+  check("Ajustes avisa o mesmo do fim de descanso", /fim de descanso só aparece com o app aberto/.test($("#restEndHint")?.textContent || ""));
   check("seletor de dias (padrão 30) em Ajustes", $("#idleDaysSelect") && $("#idleDaysSelect").value === "30");
   const sel = $("#idleDaysSelect"); sel.value = "60"; sel.dispatchEvent(new window.Event("change", { bubbles: true }));
   check("alterar dias grava preferência do usuário", localStorage.getItem("gym-idle-days:a") === "60");

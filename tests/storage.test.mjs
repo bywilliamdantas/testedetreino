@@ -97,6 +97,11 @@ if (MODE === "migrate") {
   const av = await idb("avatars", "u");
   check("avatar no IndexedDB, idêntico", av && av.dataUrl === AVATAR);
   check("avatar removido do JSON principal", mainStored().settings.avatarUrl === null);
+  // etapa 15: o histórico passa para o IndexedDB e a cópia antiga continua no localStorage
+  const rowsS = await idb("sessions", "*");
+  check("sessões copiadas para o IndexedDB (um registro por dia, idêntico)", rowsS.length === 1 && rowsS[0].date === "2026-09-01" && JSON.stringify(rowsS[0].sessions) === JSON.stringify(mkData(9).sessions["2026-09-01"]), JSON.stringify(rowsS));
+  const coreS = JSON.parse(localStorage.getItem("gym-data-v2:u") || "null");
+  check("núcleo gravado no localStorage sem as sessões", !!coreS && !("sessions" in coreS) && coreS._sessionsIn === "idb", JSON.stringify(coreS));
   check("histórico de sessões e snapshot intactos", JSON.stringify(mainStored().sessions) === JSON.stringify(mkData(9).sessions));
   check("schemaVersion 4", mainStored().schemaVersion === 4);
   const meta = await idb("meta", "migration:u");

@@ -73,9 +73,40 @@ check("css: todo var(--x) usado está definido", undef.length === 0, undef.join(
 const inlineBad = [];
 for (const f of [...jsFiles, "index.html"]) {
   read(f).split("\n").forEach((line, i) => {
-    for (const m of line.matchAll(/style="(?!\$\{toneVars\(|--pct:)/g)) inlineBad.push(`${f}:${i + 1}`);
+    inlineBad.push(...Array.from(line.matchAll(/style="(?!\$\{toneVars\(|--pct:)/g), () => `${f}:${i + 1}`));
   });
 }
 check("views: só style com valor de dado (--tone/--pct); nada de estilo estático inline", inlineBad.length === 0, inlineBad.join(", "));
+
+/* ---------- nenhuma cor fixa (hex) fora de tokens.css ---------- */
+// Toda cor nasce em tokens.css; CSS e JS usam var(--token). Exceções (cada uma com o porquê);
+// um hex novo, ou diferente do listado, em qualquer arquivo de src/ ou no index.html derruba o teste.
+const HEX_ALLOW = {
+  "src/theme.js": ["#f3f2ef", "#0e0b12"],            // theme-color da barra do navegador: literal por exigência do <meta>; igualdade com --bg conferida acima
+  "index.html": ["#f3f2ef"],                         // idem (valor estático do <meta name=\"theme-color\">)
+  "src/data/constants.js": ["#ff5a36", "#2f8fff", "#22c55e", "#ffb020", "#7c5cfc", "#12b3a8"], // PALETTE: cor de dado do treino (vira --tone inline, com alfa hex anexado)
+  "src/config.js": ["#8b8b94"],                      // REST_COLOR: cor de dado do descanso (idem)
+  "src/icons-svg.js": "*"                            // ilustração do logo (gradientes do desenho, não UI)
+};
+const blank = (m) => m.replace(/[^\n]/g, ""); // some o comentário mas mantém as quebras de linha (o número da linha do relatório continua certo)
+const stripComments = (f, src) => f.endsWith(".css")
+  ? src.replace(/\/\*[\s\S]*?\*\//g, blank)
+  : src.replace(/\/\*[\s\S]*?\*\//g, blank).replace(/<!--[\s\S]*?-->/g, blank).split("\n").map((l) => l.replace(/(^|[^:"'`\\])\/\/.*$/, "$1")).join("\n");
+const hexScan = [...walk("src", [".css", ".js"]), "index.html"].filter((f) => !f.endsWith("tokens.css"));
+const hexBad = [];
+for (const f of hexScan) {
+  const key = f.split(path.sep).join("/");
+  const allowed = HEX_ALLOW[key];
+  if (allowed === "*") continue;
+  stripComments(f, read(f)).split("\n").forEach((line, i) => {
+    for (const m of line.matchAll(/#[0-9a-fA-F]{3,8}\b/g)) {
+      if (![4, 5, 7, 9].includes(m[0].length)) continue;
+      if (!(allowed || []).map(norm).includes(norm(m[0]))) hexBad.push(`${key}:${i + 1} ${m[0]}`);
+    }
+  });
+}
+check("cores: nenhum hex fora de tokens.css (exceções documentadas em HEX_ALLOW)", hexBad.length === 0, hexBad.join(", "));
+const allowStale = Object.entries(HEX_ALLOW).filter(([f, v]) => v !== "*" && !v.every((h) => read(f).toLowerCase().includes(h)));
+check("cores: toda exceção de HEX_ALLOW ainda existe no arquivo (sem exceção morta)", allowStale.length === 0, allowStale.map(([f]) => f).join(", "));
 
 process.exit(fails ? 1 : 0);

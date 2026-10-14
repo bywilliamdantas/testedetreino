@@ -168,6 +168,24 @@ if (MODE === "login") {
   search3.value = "Esteira"; search3.dispatchEvent(new window.Event("input", { bubbles: true })); await wait(100);
   check("8. nome da biblioteca não mostra o seletor de grupo", !$("#exPickerGroup"));
   $("#sheetClose").click(); await wait();
+
+  // 9. editar o grupo muscular de exercício próprio já criado (na edição do treino)
+  const groupSels = $$('[data-role="exgroup"]');
+  const rowOf = (name) => $$(".exercise-row").find((r) => r.querySelector(".ex-name-text")?.textContent.trim() === name);
+  check("9. exercício próprio mostra o seletor de grupo (e só ele)", groupSels.length === 2, String(groupSels.length));
+  check("9. esteira (cardio da biblioteca) não mostra o seletor", !rowOf("Esteira")?.querySelector('[data-role="exgroup"]'));
+  const gsel = rowOf("Remada do meu jeito")?.querySelector('[data-role="exgroup"]');
+  check("9. seletor começa no grupo gravado", !!gsel && gsel.value === "Costas / Dorsal", gsel && gsel.value);
+  check("9. seletor tem as mesmas opções do picker (sem Cardio)", !!gsel && gsel.options.length > 10 && ![...gsel.options].some((o) => o.value === "Cardio"));
+  gsel.value = "Bíceps"; gsel.dispatchEvent(new window.Event("change", { bubbles: true })); await wait(400);
+  const edited = stored().workouts.B.exercises.find((e) => e.name === "Remada do meu jeito");
+  check("9. editar o grupo grava em ex.group", edited.group === "Bíceps", JSON.stringify(edited));
+  const gsel2 = rowOf("Exercício sem grupo")?.querySelector('[data-role="exgroup"]');
+  check("9. exercício sem grupo começa em 'Outros'", !!gsel2 && gsel2.value === "");
+  gsel2.value = "Tríceps"; gsel2.dispatchEvent(new window.Event("change", { bubbles: true })); await wait(400);
+  check("9. escolher grupo num exercício sem grupo grava", stored().workouts.B.exercises.find((e) => e.name === "Exercício sem grupo").group === "Tríceps");
+  gsel2.value = ""; gsel2.dispatchEvent(new window.Event("change", { bubbles: true })); await wait(400);
+  check("9. voltar para 'Outros' remove ex.group", stored().workouts.B.exercises.find((e) => e.name === "Exercício sem grupo").group === undefined);
 }
 check("sem erros de JavaScript", errors.length === 0, errors.join("\n"));
 process.exit(fails ? 1 : 0);
