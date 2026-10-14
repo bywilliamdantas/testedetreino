@@ -10,14 +10,14 @@ function makeLS() {
   const m = new Map();
   const ls = {
     _fail: null, // (key) => Error | null
-    getItem: k => m.has(k) ? m.get(k) : null,
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
     setItem(k, v) {
       const e = ls._fail && ls._fail(k, v);
       if (e) throw e;
       m.set(k, String(v));
     },
-    removeItem: k => void m.delete(k),
-    key: i => [...m.keys()][i] ?? null,
+    removeItem: (k) => void m.delete(k),
+    key: (i) => [...m.keys()][i] ?? null,
     get length() {
       return m.size;
     },
@@ -57,11 +57,11 @@ function setup() {
   S.setFlushListener(null);
   return user;
 }
-const LEG = u => `gym-data:${u}`;
-const CORE = u => `gym-data-v2:${u}`;
-const JRN = u => `gym-journal:${u}`;
+const LEG = (u) => `gym-data:${u}`;
+const CORE = (u) => `gym-data-v2:${u}`;
+const JRN = (u) => `gym-journal:${u}`;
 const ls = () => window.localStorage;
-const wait = ms => new Promise(r => setTimeout(r, ms));
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 // "reinício do app": zera memória e estado do módulo, mantém localStorage e IndexedDB
 const reboot = () => {
   store.data = JSON.parse(JSON.stringify(DEFAULT_DATA));
@@ -78,7 +78,7 @@ function makeSessions(days, setsPerDay = 40) {
   for (let i = 0; i < days; i++) {
     const log = {};
     for (let e = 0; e < 4; e++) {
-      log["e" + e] = Array.from({ length: setsPerDay / 4 }, (_, k) => ({ weight: 20 + k + i % 50, reps: 8 + k, done: true }));
+      log["e" + e] = Array.from({ length: setsPerDay / 4 }, (_, k) => ({ weight: 20 + k + (i % 50), reps: 8 + k, done: true }));
     }
     out[dayKey(i)] = [{ id: "s" + i, letter: "A", log, startedAt: i, endedAt: i + 1, snapshot: [{ id: "e0", name: "Supino", type: "strength" }] }];
   }
@@ -87,7 +87,11 @@ function makeSessions(days, setsPerDay = 40) {
 function seedLegacy(u, sessions, extra = {}) {
   const data = {
     order: ["A", "B", "C"],
-    workouts: { A: { name: "Treino A", exercises: [{ id: "e0", name: "Supino", type: "strength" }] }, B: { name: "B", exercises: [] }, C: { name: "C", exercises: [] } },
+    workouts: {
+      A: { name: "Treino A", exercises: [{ id: "e0", name: "Supino", type: "strength" }] },
+      B: { name: "B", exercises: [] },
+      C: { name: "C", exercises: [] }
+    },
     sessions,
     body: [],
     schemaVersion: 4,
@@ -175,7 +179,7 @@ test("interrupção no meio da cópia: legado intacto, modo antigo; reabrir conc
   const u = setup();
   const sessions = makeSessions(200);
   const { raw } = seedLegacy(u, sessions);
-  const restore = failPut("sessions", c => c === 120); // cai na 3ª fatia (chunk = 50)
+  const restore = failPut("sessions", (c) => c === 120); // cai na 3ª fatia (chunk = 50)
   const r1 = await boot();
   restore();
   assert.equal(r1.status, "copy-failed");
@@ -203,7 +207,7 @@ test("interrupção: dia sobrando de tentativa anterior é removido (sem duplica
 test("interrupção: falha ao gravar o núcleo (cota) não vira a chave", async () => {
   const u = setup();
   const { raw } = seedLegacy(u, makeSessions(10));
-  ls()._fail = k => k === CORE(u) ? new DOMException("cota", "QuotaExceededError") : null;
+  ls()._fail = (k) => (k === CORE(u) ? new DOMException("cota", "QuotaExceededError") : null);
   const r = await boot();
   assert.equal(r.status, "core-failed");
   assert.equal(S.sessionsMode(), "legacy");
@@ -284,7 +288,7 @@ test("registro corrompido no IndexedDB: fica de fora, é reportado e NÃO é apa
   await boot();
   // injeta um registro malformado (sem o campo sessions) direto no store
   const { runTx } = await import("../src/storage/idb.js");
-  await runTx("sessions", "readwrite", s => {
+  await runTx("sessions", "readwrite", (s) => {
     s.put({ id: `${u}|2030-01-01`, user: u, date: "2030-01-01" });
   });
   reboot();
@@ -294,7 +298,7 @@ test("registro corrompido no IndexedDB: fica de fora, é reportado e NÃO é apa
   assert.deepEqual(S.sessionsReport().corruptRows, [`${u}|2030-01-01`]);
   store.data.settings.unit = "lb";
   await persist({ flush: true });
-  const raw = await runTx("sessions", "readonly", s => {
+  const raw = await runTx("sessions", "readonly", (s) => {
     const r = s.get(`${u}|2030-01-01`);
     return () => r.result;
   });
@@ -509,7 +513,7 @@ test("reversão com cota cheia: não apaga nada", async () => {
   const u = setup();
   seedLegacy(u, makeSessions(4));
   await boot();
-  ls()._fail = k => k === LEG(u) ? new DOMException("cota", "QuotaExceededError") : null;
+  ls()._fail = (k) => (k === LEG(u) ? new DOMException("cota", "QuotaExceededError") : null);
   await assert.rejects(() => S.rollbackToLocalStorage());
   assert.ok(ls().getItem(CORE(u)), "núcleo continua");
   assert.equal(S.sessionsMode(), "idb");

@@ -25,7 +25,15 @@ function newRecord(password, extra = {}) {
 // registro no formato antigo (SHA-256 de salt + senha, em hexadecimal)
 function legacyRecord(password) {
   const salt = "abc123def456";
-  return { username: "bia", name: "Bia", salt, hash: crypto.createHash("sha256").update(salt + password, "utf8").digest("hex") };
+  return {
+    username: "bia",
+    name: "Bia",
+    salt,
+    hash: crypto
+      .createHash("sha256")
+      .update(salt + password, "utf8")
+      .digest("hex")
+  };
 }
 
 test("formato novo: senha certa confere, errada não", async () => {
@@ -49,7 +57,8 @@ test("registro novo malformado ou com iterações baixas nunca confere", async (
 });
 
 test("salt único: dois registros da mesma senha têm salt e hash diferentes", () => {
-  const a = newRecord("mesma-senha"), b = newRecord("mesma-senha");
+  const a = newRecord("mesma-senha"),
+    b = newRecord("mesma-senha");
   assert.notEqual(a.salt, b.salt);
   assert.notEqual(a.hash, b.hash);
   assert.equal(Buffer.from(a.salt, "base64").length, 16);
@@ -74,7 +83,10 @@ test("public/users.json: só apelido (sem sobrenome) e nenhum campo extra de ide
   for (const u of users) {
     assert.ok(u.name, "sem apelido");
     assert.ok(!/\s/.test(u.name.trim()), `nome completo exposto: ${u.name}`);
-    assert.deepEqual(Object.keys(u).filter((k) => !["username", "name", "salt", "hash", "alg", "iter"].includes(k)), []);
+    assert.deepEqual(
+      Object.keys(u).filter((k) => !["username", "name", "salt", "hash", "alg", "iter"].includes(k)),
+      []
+    );
   }
 });
 
@@ -121,10 +133,24 @@ test("tools/gerar-hash.html gera o formato novo e o app aceita o resultado", asy
 /* ---------- lembretes ---------- */
 function fakeNotification(permission) {
   const made = [];
-  globalThis.Notification = Object.assign(function Notif(...a) { made.push(a); }, { permission });
+  globalThis.Notification = Object.assign(
+    function Notif(...a) {
+      made.push(a);
+    },
+    { permission }
+  );
   return made;
 }
-const fakeReg = (impl) => { const calls = []; return { calls, showNotification: async (...a) => { calls.push(a); if (impl) await impl(); } }; };
+const fakeReg = (impl) => {
+  const calls = [];
+  return {
+    calls,
+    showNotification: async (...a) => {
+      calls.push(a);
+      if (impl) await impl();
+    }
+  };
+};
 
 test("notificação usa registration.showNotification e nunca new Notification()", async () => {
   const made = fakeNotification("granted");
@@ -148,7 +174,9 @@ test("sem permissão, sem service worker ou com erro: devolve false (o toast cob
   fakeNotification("granted");
   store.swRegistration = null; // e sem navigator.serviceWorker (Node)
   assert.equal(await notifyViaServiceWorker("a", "b"), false);
-  store.swRegistration = fakeReg(async () => { throw new Error("falhou"); });
+  store.swRegistration = fakeReg(async () => {
+    throw new Error("falhou");
+  });
   assert.equal(await notifyViaServiceWorker("a", "b"), false);
   store.swRegistration = null;
 });
@@ -162,7 +190,8 @@ test("sem store.swRegistration, procura o registro via navigator.serviceWorker",
 });
 
 test("o código-fonte não usa mais new Notification()", () => {
-  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]);
+  const walk = (dir) =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]));
   for (const f of walk(path.join(root, "src")).filter((f) => f.endsWith(".js"))) {
     assert.ok(!/new\s+Notification\s*\(/.test(fs.readFileSync(f, "utf8")), `${f} ainda usa new Notification()`);
   }

@@ -1,6 +1,6 @@
 {
   "name": "meus-treinos",
-  "version": "8.5.0",
+  "version": "9.9.0",
   "description": "App para organizar treinos A/B/C, ciclo automático e histórico. PWA instalável no iPhone.",
   "private": true,
   "type": "module",
@@ -14,9 +14,6 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@babel/generator": "^8.0.6",
-    "@babel/parser": "^8.0.6",
-    "@babel/traverse": "^8.0.6",
     "@eslint/js": "^9.39.0",
     "eslint": "^9.39.0",
     "fake-indexeddb": "^6.2.5",

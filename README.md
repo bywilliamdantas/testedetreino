@@ -52,7 +52,7 @@ meus-treinos/
 │   ├── sw.js                  → service worker (uso offline + atualização)
 │   ├── users.json              → lista de usuários (apelido + hash da senha; você edita à mão)
 │   └── icons/                     → ícones do app (veja "Ícones" abaixo)
-├── tests/                  → 21 arquivos de teste, rodados por `npm test` (ver "Testes")
+├── tests/                  → 22 arquivos de teste, rodados por `npm test` (ver "Testes")
 ├── tools/
 │   ├── gerar-hash.html      → ferramenta offline para gerar o hash das senhas (uso local; NÃO vai para o site publicado)
 │   └── build-font.py        → script que gera a fonte de números (src/fonts/treino-score.woff2)
@@ -269,6 +269,19 @@ A ilustração do logo (`src/icons-svg.js`) e os PNGs não são do Lucide.
 > THIS SOFTWARE.
 
 ## Novidades desta versão
+
+### v9.9 — Correções de segurança e qualidade
+- **Importação mais segura**: `validateBackup` (`src/backup/validate.js`) agora só aceita chaves de
+  treino e ids com letras, números, `_` e `-`. Um arquivo com HTML nesses campos é recusado (ou o
+  item é descartado), e os ids também passam por `escapeAttr` ao montar a tela.
+- **Arquivo de importação acima de 25 MB é recusado** antes de ser lido.
+- **Tocar na notificação do lembrete abre/foca o app** (`notificationclick` no `public/sw.js`).
+- **CI**: o workflow agora roda `npm run lint` e `npm run format:check`; o build duplicado foi
+  removido (o `npm test` já builda). Código todo formatado com Prettier; ESLint sem erros.
+- Dependências: removidos `@babel/*` (não usados); `npm audit` sem alertas.
+- `manifest.json` ganhou `id`; `withRetry` passa a aguardar funções assíncronas.
+- **Pendente (manual)**: regenerar os usuários do `users.json` com `tools/gerar-hash.html` — os
+  registros atuais ainda estão no formato antigo (SHA-256 simples).
 
 ### v8.5 — Timer de descanso
 - **Beep ao fim do descanso** (Web Audio, 880 Hz, ~0,2 s). O áudio é liberado no primeiro

@@ -6,14 +6,7 @@ import { TAB_DEFS } from "../src/data/constants.js";
 
 /* Padrão do app (etapa 12): Lucide, viewBox 24x24, fill none, stroke currentColor,
    stroke-width 2.2, linecap/linejoin round. */
-const ATTRS = [
-  'viewBox="0 0 24 24"',
-  'fill="none"',
-  'stroke="currentColor"',
-  'stroke-width="2.2"',
-  'stroke-linecap="round"',
-  'stroke-linejoin="round"'
-];
+const ATTRS = ['viewBox="0 0 24 24"', 'fill="none"', 'stroke="currentColor"', 'stroke-width="2.2"', 'stroke-linecap="round"', 'stroke-linejoin="round"'];
 
 test("lucideSvg monta o <svg> no padrão", () => {
   const svg = lucideSvg(20, "check");

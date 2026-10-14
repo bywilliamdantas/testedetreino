@@ -9,8 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
-const swSource = fs.readFileSync(path.join(root, "public/sw.js"), "utf8")
-  .split("__APP_VERSION__").join("vTESTE");
+const swSource = fs.readFileSync(path.join(root, "public/sw.js"), "utf8").split("__APP_VERSION__").join("vTESTE");
 
 const BASE = "https://app.test/repo/";
 const abs = (u) => new URL(typeof u === "string" ? u : u.url, BASE + "sw.js").href;
@@ -18,14 +17,28 @@ const abs = (u) => new URL(typeof u === "string" ? u : u.url, BASE + "sw.js").hr
 function setup() {
   const stores = new Map();
   const makeCache = (store) => ({
-    async match(k) { const r = store.get(abs(k)); return r ? r.clone() : undefined; },
-    async put(k, res) { store.set(abs(k), res); },
-    async delete(k) { return store.delete(abs(k)); },
+    async match(k) {
+      const r = store.get(abs(k));
+      return r ? r.clone() : undefined;
+    },
+    async put(k, res) {
+      store.set(abs(k), res);
+    },
+    async delete(k) {
+      return store.delete(abs(k));
+    }
   });
   const caches = {
-    async open(name) { if (!stores.has(name)) stores.set(name, new Map()); return makeCache(stores.get(name)); },
-    async keys() { return [...stores.keys()]; },
-    async delete(name) { return stores.delete(name); },
+    async open(name) {
+      if (!stores.has(name)) stores.set(name, new Map());
+      return makeCache(stores.get(name));
+    },
+    async keys() {
+      return [...stores.keys()];
+    },
+    async delete(name) {
+      return stores.delete(name);
+    }
   };
 
   // rede falsa: url -> {body,status} | "offline" | "hang"
@@ -44,15 +57,36 @@ function setup() {
   const handlers = {};
   const log = { skipWaiting: 0, update: 0 };
   const self = {
-    addEventListener: (t, fn) => { handlers[t] = fn; },
-    skipWaiting: () => { log.skipWaiting++; },
-    registration: { update: () => { log.update++; } },
-    clients: { claim: async () => {} },
+    addEventListener: (t, fn) => {
+      handlers[t] = fn;
+    },
+    skipWaiting: () => {
+      log.skipWaiting++;
+    },
+    registration: {
+      update: () => {
+        log.update++;
+      }
+    },
+    clients: { claim: async () => {} }
   };
   const sandbox = {
-    self, caches, fetch: fakeFetch, Response, crypto: globalThis.crypto, URL,
-    location: new URL(BASE + "sw.js"), setTimeout, clearTimeout, console, Promise,
-    Request: class extends Request { constructor(u, o) { super(abs(u), o); } },
+    self,
+    caches,
+    fetch: fakeFetch,
+    Response,
+    crypto: globalThis.crypto,
+    URL,
+    location: new URL(BASE + "sw.js"),
+    setTimeout,
+    clearTimeout,
+    console,
+    Promise,
+    Request: class extends Request {
+      constructor(u, o) {
+        super(abs(u), o);
+      }
+    }
   };
   vm.createContext(sandbox);
   vm.runInContext(swSource, sandbox);
@@ -72,8 +106,12 @@ function setup() {
     let responded;
     const event = {
       request: { url: abs(url), method: "GET", mode },
-      respondWith: (p) => { responded = Promise.resolve(p); },
-      waitUntil: (p) => { waits.push(p); },
+      respondWith: (p) => {
+        responded = Promise.resolve(p);
+      },
+      waitUntil: (p) => {
+        waits.push(p);
+      }
     };
     handlers.fetch(event);
     return { responded, done: () => Promise.all(waits) };
@@ -81,7 +119,12 @@ function setup() {
 
   async function message(data) {
     const ch = new MessageChannel();
-    const got = new Promise((resolve) => { ch.port1.onmessage = (e) => { resolve(e.data); ch.port1.close(); }; });
+    const got = new Promise((resolve) => {
+      ch.port1.onmessage = (e) => {
+        resolve(e.data);
+        ch.port1.close();
+      };
+    });
     const waits = [];
     handlers.message({ data, ports: [ch.port2], waitUntil: (p) => waits.push(p) });
     await Promise.all(waits);
@@ -181,8 +224,8 @@ test("banner: versão nova baixada em segundo plano continua sendo avisada", asy
   const t = setup();
   seedCore(t);
   await seedCoreCache(t);
-  await t.seedCache("./app.js", "/*! APP_VERSION=\"v1.0.0\" */ velho");
-  t.net.set(BASE + "app.js", { body: "/*! APP_VERSION=\"v1.1.0\" */ novo" });
+  await t.seedCache("./app.js", '/*! APP_VERSION="v1.0.0" */ velho');
+  t.net.set(BASE + "app.js", { body: '/*! APP_VERSION="v1.1.0" */ novo' });
 
   // abre o app: serve o velho, baixa o novo em segundo plano
   const open = await t.doFetch(BASE + "app.js");
@@ -198,7 +241,8 @@ test("banner: versão nova baixada em segundo plano continua sendo avisada", asy
 
   // recarregar (navegação) abre a versão nova e limpa o aviso
   const nav = await t.doFetch(BASE + "?_u=9", { mode: "navigate" });
-  await nav.responded; await nav.done();
+  await nav.responded;
+  await nav.done();
   const r2 = await t.message({ type: "REFRESH_ASSETS" });
   assert.equal(r2.changed, false);
 });
@@ -208,7 +252,8 @@ test("sem mudança no servidor: não avisa nova versão", async () => {
   seedCore(t);
   await seedCoreCache(t);
   const open = await t.doFetch(BASE + "app.js");
-  await open.responded; await open.done();
+  await open.responded;
+  await open.done();
   const r = await t.message({ type: "REFRESH_ASSETS" });
   assert.equal(r.ok, true);
   assert.equal(r.changed, false);
@@ -227,7 +272,11 @@ test("install pré-cacheia os arquivos essenciais", async () => {
   const t = setup();
   seedCore(t);
   let p;
-  t.handlers.install({ waitUntil: (x) => { p = x; } });
+  t.handlers.install({
+    waitUntil: (x) => {
+      p = x;
+    }
+  });
   await p;
   for (const f of ["app.js", "app.css", "index.html"]) {
     assert.equal(await t.cacheText("./" + f), "novo:" + f);

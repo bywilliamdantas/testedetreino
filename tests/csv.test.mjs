@@ -10,27 +10,34 @@ beforeEach(() => {
   store.data = {
     order: ["A"],
     workouts: {
-      A: { name: "A", exercises: [
-        { id: "e1", name: "Nome NOVO do supino", type: "strength" },
-        { id: "e2", name: "Agachamento sumô", type: "strength" },
-        { id: "e3", name: "Meu exercício", type: "strength", group: "Bíceps" }
-      ] }
+      A: {
+        name: "A",
+        exercises: [
+          { id: "e1", name: "Nome NOVO do supino", type: "strength" },
+          { id: "e2", name: "Agachamento sumô", type: "strength" },
+          { id: "e3", name: "Meu exercício", type: "strength", group: "Bíceps" }
+        ]
+      }
     },
     sessions: {
-      "2026-01-10": [{
-        id: "s1", letter: "A", note: "=nota",
-        snapshot: [
-          { id: "e1", name: "Supino reto com barra", type: "strength" },
-          { id: "e3", name: "Meu exercício", type: "strength", group: "Costas / Dorsal" }
-        ],
-        log: {
-          e1: [{ weight: 80.5, reps: 8, done: true, type: "warm" }],
-          e2: [{ weight: 100, reps: 5, done: true }],
-          e3: [{ weight: 10, reps: 10, done: false }],
-          e9: [{ weight: 1, reps: 1, done: true }]
-        },
-        meta: { e1: { rpe: 8, note: "@fulano" } }
-      }]
+      "2026-01-10": [
+        {
+          id: "s1",
+          letter: "A",
+          note: "=nota",
+          snapshot: [
+            { id: "e1", name: "Supino reto com barra", type: "strength" },
+            { id: "e3", name: "Meu exercício", type: "strength", group: "Costas / Dorsal" }
+          ],
+          log: {
+            e1: [{ weight: 80.5, reps: 8, done: true, type: "warm" }],
+            e2: [{ weight: 100, reps: 5, done: true }],
+            e3: [{ weight: 10, reps: 10, done: false }],
+            e9: [{ weight: 1, reps: 1, done: true }]
+          },
+          meta: { e1: { rpe: 8, note: "@fulano" } }
+        }
+      ]
     }
   };
 });
@@ -74,5 +81,5 @@ test("CSV: notas e nomes que começam com fórmula saem com apóstrofo, dentro d
   assert.ok(csv.includes('"\'@fulano"'), "nota do exercício");
   assert.ok(!/(^|,)"[=+\-@]/m.test(csv), "nenhuma célula começa com = + - @");
   assert.equal(csvCell('a"b'), '"a""b"');
-  assert.equal(csvCell("=HYPERLINK(\"x\")"), '"\'=HYPERLINK(""x"")"');
+  assert.equal(csvCell('=HYPERLINK("x")'), '"\'=HYPERLINK(""x"")"');
 });

@@ -16,19 +16,19 @@ import { SCHEMA_VERSION } from "../src/data/constants.js";
 
 const NOW = new Date("2026-10-13T12:00:00Z").getTime();
 const DAY = 24 * 60 * 60 * 1000;
-const ago = d => new Date(NOW - d * DAY).toISOString();
+const ago = (d) => new Date(NOW - d * DAY).toISOString();
 const base = { every: 7, lastBackupAt: ago(1), snoozedUntil: null, workoutsSince: 0, hasData: true, now: NOW };
 
 /* ---------- normalizeBackupEvery ---------- */
 
 test("normalizeBackupEvery: aceita 3, 7, 14 e 0 (desligado)", () => {
-  [3, 7, 14, 0].forEach(n => assert.equal(normalizeBackupEvery(n), n));
+  [3, 7, 14, 0].forEach((n) => assert.equal(normalizeBackupEvery(n), n));
   assert.equal(normalizeBackupEvery("14"), 14);
   assert.equal(normalizeBackupEvery("0"), 0);
 });
 
 test("normalizeBackupEvery: inválido ou ausente → padrão 7", () => {
-  [undefined, null, "", false, NaN, 5, -1, "abc", 100, {}].forEach(v => assert.equal(normalizeBackupEvery(v), 7));
+  [undefined, null, "", false, NaN, 5, -1, "abc", 100, {}].forEach((v) => assert.equal(normalizeBackupEvery(v), 7));
 });
 
 /* ---------- shouldOfferBackup / backupOffer ---------- */
@@ -132,7 +132,7 @@ test("migrateSettings: sem settings também cria os campos", () => {
 });
 
 test("migrateSettings: preserva 3, 14 e 0 (desligado)", () => {
-  [3, 14, 0].forEach(n => {
+  [3, 14, 0].forEach((n) => {
     const s = { settings: { backupEvery: n } };
     migrateSettings(s);
     assert.equal(s.settings.backupEvery, n);

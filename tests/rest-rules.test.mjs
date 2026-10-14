@@ -38,17 +38,27 @@ test("superset: nunca inicia descanso (comportamento antigo preservado)", () => 
 });
 
 test("previousSetValues: copia peso e reps da série acima", () => {
-  const s = [{ weight: 40, reps: 10 }, { weight: null, reps: null }, { weight: null, reps: null }];
+  const s = [
+    { weight: 40, reps: 10 },
+    { weight: null, reps: null },
+    { weight: null, reps: null }
+  ];
   assert.deepEqual(previousSetValues(s, 1, { weight: 0, reps: 8 }), { weight: 40, reps: 10 });
 });
 
 test("previousSetValues: série acima vazia usa o padrão que a tela mostra", () => {
-  const s = [{ weight: null, reps: null }, { weight: null, reps: null }];
+  const s = [
+    { weight: null, reps: null },
+    { weight: null, reps: null }
+  ];
   assert.deepEqual(previousSetValues(s, 1, { weight: 25, reps: 12 }), { weight: 25, reps: 12 });
 });
 
 test("previousSetValues: peso 0 salvo é valor válido (não cai no padrão)", () => {
-  const s = [{ weight: 0, reps: 15 }, { weight: null, reps: null }];
+  const s = [
+    { weight: 0, reps: 15 },
+    { weight: null, reps: null }
+  ];
   assert.deepEqual(previousSetValues(s, 1, { weight: 30, reps: 10 }), { weight: 0, reps: 15 });
 });
 
@@ -58,7 +68,10 @@ test("previousSetValues: primeira série não tem anterior", () => {
 });
 
 test("previousSetValues: não altera as séries", () => {
-  const s = [{ weight: null, reps: null }, { weight: null, reps: null }];
+  const s = [
+    { weight: null, reps: null },
+    { weight: null, reps: null }
+  ];
   const copy = JSON.stringify(s);
   previousSetValues(s, 1, { weight: 20, reps: 10 });
   assert.equal(JSON.stringify(s), copy);
