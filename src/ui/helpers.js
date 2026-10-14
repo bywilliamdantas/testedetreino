@@ -21,7 +21,7 @@ export function colorFor(key, order) {
 }
 
 export function userDisplayName() {
-  return store.data.settings.displayName && store.data.settings.displayName.trim() || store.currentUser.name || store.currentUser.username;
+  return (store.data.settings.displayName && store.data.settings.displayName.trim()) || store.currentUser.name || store.currentUser.username;
 }
 
 export function userInitial() {

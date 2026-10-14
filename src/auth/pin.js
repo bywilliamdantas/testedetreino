@@ -13,16 +13,20 @@ export const PIN_KEY_PREFIX = "gym-pin:";
 export const PIN_ITERATIONS = 600000;
 export const PIN_MAX_FAILS = 5;
 
-const pinKey = username => PIN_KEY_PREFIX + String(username || "").trim().toLowerCase();
+const pinKey = (username) =>
+  PIN_KEY_PREFIX +
+  String(username || "")
+    .trim()
+    .toLowerCase();
 
-export const toB64 = bytes => btoa(String.fromCharCode(...bytes));
-export const fromB64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+export const toB64 = (bytes) => btoa(String.fromCharCode(...bytes));
+export const fromB64 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0));
 
 export function pinSupported() {
   return typeof crypto !== "undefined" && !!crypto.subtle && !!crypto.getRandomValues;
 }
 
-export const isValidPin = pin => /^\d{4}$/.test(String(pin || ""));
+export const isValidPin = (pin) => /^\d{4}$/.test(String(pin || ""));
 
 /* PINs óbvios (0000, 1111, 1234, 4321…) são recusados. */
 export function isWeakPin(pin) {
@@ -54,7 +58,7 @@ export function readPin(username) {
   }
 }
 
-export const hasPin = username => !!username && !!readPin(username);
+export const hasPin = (username) => !!username && !!readPin(username);
 
 function writePin(username, rec) {
   window.localStorage.setItem(pinKey(username), JSON.stringify(rec));

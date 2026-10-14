@@ -5,7 +5,7 @@ import { markSessionsDirty } from "../../storage/session-store.js";
 import { store } from "../../store.js";
 import { colorFor, toneVars } from "../../ui/helpers.js";
 import { showToast } from "../../ui/toast.js";
-import { escapeHtml } from "../../utils/dom.js";
+import { escapeAttr, escapeHtml } from "../../utils/dom.js";
 import { fmtDuration } from "../../utils/format.js";
 import { sessionDurationMs, sessionsFor } from "../../workouts/sessions.js";
 import { workoutLabel } from "../../workouts/workouts.js";
@@ -14,9 +14,7 @@ import { render } from "../render.js";
 import { closeOverlay } from "./overlay-manager.js";
 
 export function renderDaySessionsOverlay(root) {
-  const {
-    dateKey
-  } = store.overlay;
+  const { dateKey } = store.overlay;
   const arr = sessionsFor(dateKey);
   const [y, m, dd] = dateKey.split("-").map(Number);
   const d = new Date(y, m - 1, dd);
@@ -30,30 +28,34 @@ export function renderDaySessionsOverlay(root) {
     </div>
     <p class="day-sessions-count">${arr.length} treinos neste dia</p>
     <div class="sheet-day-sessions">
-      ${arr.map((sess, idx) => {
-    const wk = store.data.workouts[sess.letter];
-    const isRest = wk?.isRest;
-    const dur = sessionDurationMs(sess);
-    const setsCount = Object.values(sess.log || {}).reduce((n, sets) => n + (Array.isArray(sets) ? sets.length : 0), 0);
-    const metaBits = [];
-    if (idx === 0) metaBits.push("1º");else if (idx === 1) metaBits.push("2º");else metaBits.push(idx + 1 + "º");
-    if (dur) metaBits.push(fmtDuration(dur));
-    if (setsCount) metaBits.push(setsCount + " série(s)");
-    return `<div class="sheet-day-session" role="button" data-role="opensession" data-sessionid="${sess.id}">
+      ${arr
+        .map((sess, idx) => {
+          const wk = store.data.workouts[sess.letter];
+          const isRest = wk?.isRest;
+          const dur = sessionDurationMs(sess);
+          const setsCount = Object.values(sess.log || {}).reduce((n, sets) => n + (Array.isArray(sets) ? sets.length : 0), 0);
+          const metaBits = [];
+          if (idx === 0) metaBits.push("1º");
+          else if (idx === 1) metaBits.push("2º");
+          else metaBits.push(idx + 1 + "º");
+          if (dur) metaBits.push(fmtDuration(dur));
+          if (setsCount) metaBits.push(setsCount + " série(s)");
+          return `<div class="sheet-day-session" role="button" data-role="opensession" data-sessionid="${escapeAttr(sess.id)}">
           <div class="sds-chip" style="${toneVars(colorFor(sess.letter, store.data.order))}">${isRest ? ICONS.moonSmall : sess.letter}</div>
           <div class="sds-info">
             <div class="sds-name">${escapeHtml(wk?.name || workoutLabel(sess.letter))}</div>
             <div class="sds-meta">${metaBits.join(" · ")}</div>
           </div>
-          <button class="sds-del" data-role="delsession" data-sessionid="${sess.id}" aria-label="remover sessão">${ICONS.close}</button>
+          <button class="sds-del" data-role="delsession" data-sessionid="${escapeAttr(sess.id)}" aria-label="remover sessão">${ICONS.close}</button>
         </div>`;
-  }).join("")}
+        })
+        .join("")}
     </div>
   </div>`;
   document.getElementById("sheetBackdrop").addEventListener("click", closeOverlay);
   document.getElementById("sheetClose").addEventListener("click", closeOverlay);
-  document.querySelectorAll('[data-role="opensession"]').forEach(b => {
-    b.addEventListener("click", ev => {
+  document.querySelectorAll('[data-role="opensession"]').forEach((b) => {
+    b.addEventListener("click", (ev) => {
       if (ev.target.closest('[data-role="delsession"]')) return;
       const sessionId = b.dataset.sessionid;
       store.overlay = null;
@@ -62,16 +64,17 @@ export function renderDaySessionsOverlay(root) {
       });
     });
   });
-  document.querySelectorAll('[data-role="delsession"]').forEach(el => {
-    el.addEventListener("click", ev => {
+  document.querySelectorAll('[data-role="delsession"]').forEach((el) => {
+    el.addEventListener("click", (ev) => {
       ev.stopPropagation();
       const sessionId = el.dataset.sessionid;
       const before = sessionsFor(dateKey).slice();
-      const origIdx = before.findIndex(x => x.id === sessionId);
+      const origIdx = before.findIndex((x) => x.id === sessionId);
       if (origIdx < 0) return;
       const removed = before[origIdx];
-      const arr2 = before.filter(x => x.id !== sessionId);
-      if (arr2.length) store.data.sessions[dateKey] = arr2;else delete store.data.sessions[dateKey];
+      const arr2 = before.filter((x) => x.id !== sessionId);
+      if (arr2.length) store.data.sessions[dateKey] = arr2;
+      else delete store.data.sessions[dateKey];
       markSessionsDirty(dateKey);
       store.overlay = null;
       render();
@@ -80,7 +83,7 @@ export function renderDaySessionsOverlay(root) {
         label: "Desfazer",
         fn: async () => {
           const cur = sessionsFor(dateKey).slice();
-          if (cur.some(x => x.id === removed.id)) return;
+          if (cur.some((x) => x.id === removed.id)) return;
           cur.splice(Math.min(origIdx, cur.length), 0, removed);
           store.data.sessions[dateKey] = cur;
           markSessionsDirty(dateKey);

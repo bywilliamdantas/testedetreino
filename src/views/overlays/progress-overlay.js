@@ -16,8 +16,8 @@ export function buildLineChart(hist, unit) {
     padR = 14,
     padT = 14,
     padB = 24;
-  const validPts = hist.filter(p => p.weight != null && !isNaN(p.weight) || p.minutes != null && !isNaN(p.minutes));
-  const validValues = validPts.map(p => p.weight != null ? p.weight : p.minutes);
+  const validPts = hist.filter((p) => (p.weight != null && !isNaN(p.weight)) || (p.minutes != null && !isNaN(p.minutes)));
+  const validValues = validPts.map((p) => (p.weight != null ? p.weight : p.minutes));
   if (validValues.length === 0) return "";
   let min = Math.min(...validValues),
     max = Math.max(...validValues);
@@ -36,7 +36,7 @@ export function buildLineChart(hist, unit) {
     };
   });
   const linePath = pts.map((pt, i) => (i === 0 ? "M" : "L") + pt.x.toFixed(1) + " " + pt.y.toFixed(1)).join(" ");
-  const circles = pts.map(pt => `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3.2" fill="var(--accent)"/>`).join("");
+  const circles = pts.map((pt) => `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3.2" fill="var(--accent)"/>`).join("");
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" aria-label="Gráfico de evolução">
     <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${h - padB}" stroke="var(--divider)" stroke-width="1"/>
     <line x1="${padL}" y1="${h - padB}" x2="${w - padR}" y2="${h - padB}" stroke="var(--divider)" stroke-width="1"/>
@@ -48,10 +48,7 @@ export function buildLineChart(hist, unit) {
 }
 
 export function renderProgressOverlay(root) {
-  const {
-    exId,
-    name
-  } = store.overlay;
+  const { exId, name } = store.overlay;
   const ex = findExercise(exId);
   const cardio = isCardio(ex);
   const hist = exerciseHistory(exId);
@@ -60,24 +57,42 @@ export function renderProgressOverlay(root) {
     body = `<div class="sheet-empty">Ainda não há registros para "${escapeHtml(name)}".</div>`;
   } else if (cardio) {
     const chart = buildLineChart(hist, "min");
-    body = `<div class="chart-wrap">${chart}</div>` + `<div class="progress-list">${hist.slice().reverse().map(p => {
-      const [, mo, da] = p.date.split("-").map(Number);
-      return `<div class="progress-row"><span>${da}/${mo}</span><span>${p.minutes != null ? p.minutes + " min" : "—"}</span><span>${p.totalMinutes ? p.totalMinutes + " min total" : ""}</span></div>`;
-    }).join("")}</div>`;
+    body =
+      `<div class="chart-wrap">${chart}</div>` +
+      `<div class="progress-list">${hist
+        .slice()
+        .reverse()
+        .map((p) => {
+          const [, mo, da] = p.date.split("-").map(Number);
+          return `<div class="progress-row"><span>${da}/${mo}</span><span>${p.minutes != null ? p.minutes + " min" : "—"}</span><span>${p.totalMinutes ? p.totalMinutes + " min total" : ""}</span></div>`;
+        })
+        .join("")}</div>`;
   } else {
-    const chart = buildLineChart(hist.map(p => ({
-      ...p,
-      weight: p.weight != null ? Math.round(toDisp(p.weight) * 10) / 10 : null
-    })), unit());
+    const chart = buildLineChart(
+      hist.map((p) => ({
+        ...p,
+        weight: p.weight != null ? Math.round(toDisp(p.weight) * 10) / 10 : null
+      })),
+      unit()
+    );
     const prs = exercisePRs(exId);
-    const prHtml = prs ? `<div class="pr-chips">
+    const prHtml = prs
+      ? `<div class="pr-chips">
       <div class="pr-chip"><span>${ICONS.trophy} carga máx.</span><b>${fmtW(prs.maxWeight)} ${unit()}${prs.maxWeightReps ? " × " + prs.maxWeightReps : ""}</b></div>
       <div class="pr-chip"><span>1RM estimado</span><b>${fmtW(prs.best1rm)} ${unit()}</b></div>
-    </div>` : "";
-    body = prHtml + `<div class="chart-wrap">${chart || `<div class="sheet-empty">Só há repetições registradas, sem peso, até agora.</div>`}</div>` + `<div class="progress-list">${hist.slice().reverse().map(p => {
-      const [, mo, da] = p.date.split("-").map(Number);
-      return `<div class="progress-row"><span>${da}/${mo}</span><span>${p.weight != null ? fmtW(p.weight) + " " + unit() : "—"}</span><span>${p.reps != null ? p.reps + " reps" : "—"}</span></div>`;
-    }).join("")}</div>`;
+    </div>`
+      : "";
+    body =
+      prHtml +
+      `<div class="chart-wrap">${chart || `<div class="sheet-empty">Só há repetições registradas, sem peso, até agora.</div>`}</div>` +
+      `<div class="progress-list">${hist
+        .slice()
+        .reverse()
+        .map((p) => {
+          const [, mo, da] = p.date.split("-").map(Number);
+          return `<div class="progress-row"><span>${da}/${mo}</span><span>${p.weight != null ? fmtW(p.weight) + " " + unit() : "—"}</span><span>${p.reps != null ? p.reps + " reps" : "—"}</span></div>`;
+        })
+        .join("")}</div>`;
   }
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">

@@ -11,8 +11,8 @@ export function storageKey() {
   return store.currentUser ? `${STORAGE_KEY}:${store.currentUser.username}` : STORAGE_KEY;
 }
 
-const keyFor = (base, name) => name ? `${base}:${name}` : base;
-const currentName = () => store.currentUser ? store.currentUser.username : null;
+const keyFor = (base, name) => (name ? `${base}:${name}` : base);
+const currentName = () => (store.currentUser ? store.currentUser.username : null);
 
 /* Núcleo (tudo menos sessions) e diário de gravação pendente. `name` é o
    username (ou null); sem argumento vale o usuário atual. */

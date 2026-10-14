@@ -39,13 +39,15 @@ export function renderPinOverlay(root) {
       ${has ? `<button class="footer-btn danger" id="pinRemove">Remover PIN</button>` : ""}
     </div>
   </div>`;
-  const $ = id => document.getElementById(id);
+  const $ = (id) => document.getElementById(id);
   $("sheetBackdrop").addEventListener("click", closeOverlay);
   $("sheetClose").addEventListener("click", closeOverlay);
-  ["pinNew", "pinNew2"].forEach(id => $(id).addEventListener("input", e => {
-    e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
-  }));
-  const err = msg => {
+  ["pinNew", "pinNew2"].forEach((id) =>
+    $(id).addEventListener("input", (e) => {
+      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
+    })
+  );
+  const err = (msg) => {
     $("pinError").textContent = msg;
     $("pinSave").disabled = false;
   };
@@ -72,11 +74,16 @@ export function renderPinOverlay(root) {
     showToast(has ? "PIN alterado" : "PIN ativado");
   });
   const rm = $("pinRemove");
-  if (rm) rm.addEventListener("click", () => {
-    openConfirm("Remover o PIN? Você volta a entrar só com a senha.", () => {
-      removePin(user.username);
-      render();
-      showToast("PIN removido");
-    }, { yesLabel: "Remover", noLabel: "Cancelar", yesStyle: "danger" });
-  });
+  if (rm)
+    rm.addEventListener("click", () => {
+      openConfirm(
+        "Remover o PIN? Você volta a entrar só com a senha.",
+        () => {
+          removePin(user.username);
+          render();
+          showToast("PIN removido");
+        },
+        { yesLabel: "Remover", noLabel: "Cancelar", yesStyle: "danger" }
+      );
+    });
 }

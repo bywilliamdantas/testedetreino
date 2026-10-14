@@ -55,7 +55,8 @@ export async function bootApp() {
   if (!storageAvailable()) {
     store.loadFailed = true;
     store.currentUser = readSession();
-    if (store.currentUser) render();else renderLogin();
+    if (store.currentUser) render();
+    else renderLogin();
     showToast("Armazenamento indisponível (modo privado?).");
     return;
   }
@@ -80,12 +81,15 @@ export async function bootApp() {
       backgroundUpdateCheck();
     }
   });
-  setInterval(() => {
-    if (store.currentUser) {
-      enforceSessionExpiry();
-      if (store.currentUser) checkReminder();
-    }
-  }, 5 * 60 * 1000);
+  setInterval(
+    () => {
+      if (store.currentUser) {
+        enforceSessionExpiry();
+        if (store.currentUser) checkReminder();
+      }
+    },
+    5 * 60 * 1000
+  );
   window.addEventListener("beforeunload", () => {
     if (!store.currentUser) return;
     if (sessionsMode() === "idb") {
@@ -102,9 +106,10 @@ export async function bootApp() {
   });
   if (window.matchMedia) {
     const mq = window.matchMedia("(prefers-color-scheme: light)");
-    if (mq.addEventListener) mq.addEventListener("change", () => {
-      if (getThemePref() === "auto") applyTheme("auto");
-    });
+    if (mq.addEventListener)
+      mq.addEventListener("change", () => {
+        if (getThemePref() === "auto") applyTheme("auto");
+      });
   }
 })();
 

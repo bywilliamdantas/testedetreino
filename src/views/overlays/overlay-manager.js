@@ -149,16 +149,18 @@ function visible(el) {
 }
 
 function tabbables(scope) {
-  return [...scope.querySelectorAll(FOCUSABLE)].filter(el => !el.disabled && el.tabIndex >= 0 && visible(el));
+  return [...scope.querySelectorAll(FOCUSABLE)].filter((el) => !el.disabled && el.tabIndex >= 0 && visible(el));
 }
 
 /* Seletor que reencontra o elemento depois que um render() recria o DOM: id, senão data-*, senão aria-label. */
 function selectorOf(el) {
   if (!el || el.nodeType !== 1) return null;
-  const q = v => String(v).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  const q = (v) => String(v).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   if (el.id) return `[id="${q(el.id)}"]`;
   const tag = el.tagName.toLowerCase();
-  const data = Object.entries(el.dataset || {}).map(([k, v]) => `[data-${k.replace(/[A-Z]/g, c => "-" + c.toLowerCase())}="${q(v)}"]`).join("");
+  const data = Object.entries(el.dataset || {})
+    .map(([k, v]) => `[data-${k.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase())}="${q(v)}"]`)
+    .join("");
   if (data) return tag + data;
   const label = el.getAttribute("aria-label");
   return label ? `${tag}[aria-label="${q(label)}"]` : null;
@@ -178,13 +180,13 @@ function currentPanel() {
    o "fechar" (que é o primeiro do cabeçalho); senão o próprio "fechar"; senão o painel. */
 function focusInitial(panel) {
   const items = tabbables(panel);
-  const target = panel.querySelector("[data-autofocus]") || items.find(el => el.id !== "sheetClose") || items[0] || panel;
+  const target = panel.querySelector("[data-autofocus]") || items.find((el) => el.id !== "sheetClose") || items[0] || panel;
   focusEl(target);
 }
 
 function setBackground(on) {
   if (!on) {
-    dlg.muted.forEach(el => {
+    dlg.muted.forEach((el) => {
       el.removeAttribute("inert");
       el.removeAttribute("aria-hidden");
     });
@@ -192,7 +194,7 @@ function setBackground(on) {
     return;
   }
   if (dlg.muted.length) return;
-  [...document.body.children].forEach(el => {
+  [...document.body.children].forEach((el) => {
     if (KEEP_ACTIVE.has(el.id) || NEVER_MUTED.test(el.tagName)) return;
     el.setAttribute("inert", ""); // some do Tab e do toque; aria-hidden cobre iOS < 15.5, que não tem inert
     el.setAttribute("aria-hidden", "true");
@@ -289,7 +291,7 @@ function onFocusIn(ev) {
   const t = ev.target;
   const panel = currentPanel();
   if (!panel || !t || !t.nodeType) return;
-  const inside = id => {
+  const inside = (id) => {
     const el = document.getElementById(id);
     return !!el && el.contains(t);
   };
@@ -300,8 +302,12 @@ function onFocusIn(ev) {
 if (typeof document !== "undefined") {
   document.addEventListener("keydown", onKeydown);
   document.addEventListener("focusin", onFocusIn);
-  document.addEventListener("click", ev => {
-    const t = ev.target;
-    if (t && typeof t.closest === "function") lastActivator = t.closest('button, a[href], [role="button"], [tabindex]');
-  }, true);
+  document.addEventListener(
+    "click",
+    (ev) => {
+      const t = ev.target;
+      if (t && typeof t.closest === "function") lastActivator = t.closest('button, a[href], [role="button"], [tabindex]');
+    },
+    true
+  );
 }

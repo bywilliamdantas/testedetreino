@@ -4,9 +4,7 @@ import { store } from "../../store.js";
 import { closeOverlay } from "./overlay-manager.js";
 
 export function renderImportChoiceOverlay(root) {
-  const {
-    parsed
-  } = store.overlay;
+  const { parsed } = store.overlay;
   const nTreinos = (parsed.order || []).length;
   const nSessoes = Object.keys(parsed.sessions || {}).length;
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>

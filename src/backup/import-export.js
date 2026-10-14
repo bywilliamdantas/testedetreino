@@ -19,19 +19,19 @@ export async function mergeImportData(parsed) {
   migrateActiveSession(parsed);
   migrateWorkouts(parsed);
   migrateSessionSnapshots(parsed);
-  Object.keys(parsed.sessions || {}).forEach(k => {
+  Object.keys(parsed.sessions || {}).forEach((k) => {
     const incoming = parsed.sessions[k] || [];
     const existing = sessionsFor(k);
-    const seen = new Set(existing.map(x => x.id));
+    const seen = new Set(existing.map((x) => x.id));
     const merged = existing.slice();
-    incoming.forEach(x => {
+    incoming.forEach((x) => {
       if (!seen.has(x.id)) merged.push(x);
     });
     store.data.sessions[k] = merged;
     markSessionsDirty(k);
   });
-  const seenBody = new Set((store.data.body || []).map(b => b.id));
-  (parsed.body || []).forEach(b => {
+  const seenBody = new Set((store.data.body || []).map((b) => b.id));
+  (parsed.body || []).forEach((b) => {
     if (!seenBody.has(b.id)) store.data.body.push(b);
   });
   initExIdCounter();

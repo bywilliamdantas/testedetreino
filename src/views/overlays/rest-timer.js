@@ -103,7 +103,8 @@ export function applyRestLayout(root, active) {
   const bottom = restBottomValue();
   if (bottom !== layoutCache.bottom) {
     layoutCache.bottom = bottom;
-    if (bottom) root.style.setProperty("--rest-bottom", bottom);else root.style.removeProperty("--rest-bottom");
+    if (bottom) root.style.setProperty("--rest-bottom", bottom);
+    else root.style.removeProperty("--rest-bottom");
   }
 }
 

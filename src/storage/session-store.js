@@ -50,9 +50,9 @@ const fresh = () => ({
 const st = fresh();
 
 const ls = () => window.localStorage;
-const sig = v => JSON.stringify(v);
-const wait = ms => new Promise(r => setTimeout(r, ms));
-const currentName = () => store.currentUser ? store.currentUser.username : null;
+const sig = (v) => JSON.stringify(v);
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const currentName = () => (store.currentUser ? store.currentUser.username : null);
 
 export const sessionsMode = () => st.mode;
 export const sessionsReport = () => st.report;
@@ -88,7 +88,7 @@ export function writeCore() {
 function journalFor(dates) {
   const days = {};
   const cur = store.data.sessions || {};
-  dates.forEach(d => {
+  dates.forEach((d) => {
     days[d] = Object.prototype.hasOwnProperty.call(cur, d) ? { v: cur[d] } : null;
   });
   return days;
@@ -134,7 +134,7 @@ function collectBatch(saved) {
   const cur = store.data.sessions || {};
   const puts = {};
   const sigs = {};
-  Object.keys(cur).forEach(d => {
+  Object.keys(cur).forEach((d) => {
     const s = sig(cur[d]);
     if (saved.get(d) !== s) {
       puts[d] = cur[d];
@@ -178,21 +178,21 @@ async function flushOnce() {
   try {
     await retrying(() => dbWriteDays(user, puts, dels));
     const back = await dbReadDaysSubset(user, batchDates);
-    putDates.forEach(d => {
+    putDates.forEach((d) => {
       if (!(d in back) || sig(back[d]) !== sigs[d]) throw new Error("verify-failed:" + d);
     });
-    dels.forEach(d => {
+    dels.forEach((d) => {
       if (d in back) throw new Error("verify-failed:" + d);
     });
-    putDates.forEach(d => saved.set(d, sigs[d]));
-    dels.forEach(d => saved.delete(d));
+    putDates.forEach((d) => saved.set(d, sigs[d]));
+    dels.forEach((d) => saved.delete(d));
     st.lastError = null;
     try {
       writeJournal([...st.marked]); // só o que ficou sujo durante a gravação
     } catch (e) {}
     return true;
   } catch (e) {
-    batchDates.forEach(d => st.marked.add(d)); // continua sujo; o diário preserva
+    batchDates.forEach((d) => st.marked.add(d)); // continua sujo; o diário preserva
     st.lastError = e;
     try {
       writeJournal([...st.marked]);
@@ -223,7 +223,7 @@ export function flushSessions() {
 }
 
 function runFlush() {
-  return flushSessions().then(ok => {
+  return flushSessions().then((ok) => {
     if (st.listener) st.listener(ok, st.lastError);
     return ok;
   });
@@ -286,7 +286,7 @@ export async function loadFromCore(coreRaw) {
   Object.assign(st, { mode: "idb", name, user, blocked: true });
   if (!(core && core.order && core.workouts)) {
     const meta = await idbGet(ST_META, migrationMetaKey(user));
-    if (!meta || meta.state !== "verified" && meta.state !== "done") {
+    if (!meta || (meta.state !== "verified" && meta.state !== "done")) {
       Object.assign(st, { mode: "legacy", blocked: false });
       return false;
     }
@@ -323,13 +323,14 @@ export async function loadFromCore(coreRaw) {
   }
   st.blocked = false;
   const sessions = {};
-  Object.keys(days).forEach(d => {
+  Object.keys(days).forEach((d) => {
     sessions[d] = days[d];
     if (!recovered) st.saved.set(d, sig(days[d]));
   });
-  jDays.forEach(d => {
+  jDays.forEach((d) => {
     const e = journal.days[d];
-    if (e === null) delete sessions[d];else if (e && "v" in e) sessions[d] = e.v;
+    if (e === null) delete sessions[d];
+    else if (e && "v" in e) sessions[d] = e.v;
     st.marked.add(d);
   });
   store.data.sessions = sessions;
@@ -381,11 +382,11 @@ export async function migrateSessionsToIdb() {
   try {
     // 1) copiar (em fatias) e limpar sobras de uma tentativa anterior
     const existing = await dbListDayKeys(user);
-    const stale = existing.filter(d => !Object.prototype.hasOwnProperty.call(rawSessions, d));
+    const stale = existing.filter((d) => !Object.prototype.hasOwnProperty.call(rawSessions, d));
     for (const part of chunk(stale, TUNING.chunkDays)) await dbWriteDays(user, {}, part);
     for (const part of chunk(dates, TUNING.chunkDays)) {
       const puts = {};
-      part.forEach(d => {
+      part.forEach((d) => {
         puts[d] = rawSessions[d];
       });
       await dbWriteDays(user, puts, []);
@@ -399,7 +400,7 @@ export async function migrateSessionsToIdb() {
     }
     await idbPut(ST_META, { key: migrationMetaKey(user), state: "verified", days: dates.length, legacyChars: raw.length, at: new Date().toISOString() });
   } catch (e) {
-    return { status: "copy-failed", error: String(e && e.name || e) };
+    return { status: "copy-failed", error: String((e && e.name) || e) };
   }
   // 3) núcleo no localStorage, lido de volta; esta gravação é o ponto de virada
   const migratedAt = new Date().toISOString();
@@ -414,11 +415,11 @@ export async function migrateSessionsToIdb() {
     try {
       ls().removeItem(ck);
     } catch (e2) {}
-    return { status: "core-failed", error: String(e && e.name || e) };
+    return { status: "core-failed", error: String((e && e.name) || e) };
   }
   // 4) a partir daqui o app usa o IndexedDB
   Object.assign(st, { mode: "idb", name, user, migratedAt, blocked: false });
-  dates.forEach(d => st.saved.set(d, sig(rawSessions[d])));
+  dates.forEach((d) => st.saved.set(d, sig(rawSessions[d])));
   try {
     await flushSessions(); // grava o que as migrações em memória mudaram (ex.: ids novos)
     await idbPut(ST_META, { key: migrationMetaKey(user), state: "done", days: dates.length, legacyChars: raw.length, at: migratedAt });
@@ -438,7 +439,7 @@ export async function releaseLegacyCopy() {
   }
   if (raw == null) return "none";
   const migrated = Date.parse(st.migratedAt || "");
-  const backup = Date.parse(store.data.settings && store.data.settings.lastBackupAt || "");
+  const backup = Date.parse((store.data.settings && store.data.settings.lastBackupAt) || "");
   if (!(migrated > 0 && backup > migrated)) return "waiting-backup";
   if (!(await flushSessions())) return "flush-failed";
   if (st.marked.size) return "pending";

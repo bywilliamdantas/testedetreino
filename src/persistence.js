@@ -2,7 +2,18 @@ import { storageKey } from "./config.js";
 import { initExIdCounter, initRestCounter } from "./counters.js";
 import { migrateActiveSession, migrateSessionSnapshots, migrateSessions, migrateSettings, migrateWorkouts } from "./data-migrations.js";
 import { isQuotaError } from "./storage/idb.js";
-import { flushNow, flushSessions, isBlocked, loadFromCore, readCoreRaw, resetSessionStore, saveCoreAndJournal, scheduleFlush, sessionsMode, setFlushListener } from "./storage/session-store.js";
+import {
+  flushNow,
+  flushSessions,
+  isBlocked,
+  loadFromCore,
+  readCoreRaw,
+  resetSessionStore,
+  saveCoreAndJournal,
+  scheduleFlush,
+  sessionsMode,
+  setFlushListener
+} from "./storage/session-store.js";
 import { store } from "./store.js";
 import { showToast } from "./ui/toast.js";
 
@@ -21,10 +32,10 @@ export async function withRetry(fn, attempts = 3, baseDelay = 250) {
   let lastErr;
   for (let i = 0; i < attempts; i++) {
     try {
-      return fn();
+      return await fn();
     } catch (e) {
       lastErr = e;
-      if (i < attempts - 1) await new Promise(r => setTimeout(r, baseDelay * Math.pow(2, i)));
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, baseDelay * Math.pow(2, i)));
     }
   }
   throw lastErr;
@@ -35,7 +46,7 @@ export async function loadData() {
   try {
     const coreRaw = readCoreRaw();
     // núcleo presente = histórico no IndexedDB (ver storage/session-store.js)
-    if (coreRaw && await loadFromCore(coreRaw)) {
+    if (coreRaw && (await loadFromCore(coreRaw))) {
       store.loadFailed = false;
       initExIdCounter();
       initRestCounter();

@@ -5,13 +5,7 @@ import { closeOverlay, renderOverlay } from "./overlay-manager.js";
 
 /* O foco abre em "Cancelar" (data-autofocus): confirmar altera dados e um Enter mantido ou sem querer não deve decidir por quem abriu o painel. */
 export function renderConfirmOverlay(root) {
-  const {
-    msg,
-    onYes,
-    yesLabel,
-    noLabel,
-    onNo
-  } = store.overlay;
+  const { msg, onYes, yesLabel, noLabel, onNo } = store.overlay;
   const yesText = yesLabel || "Confirmar";
   const noText = noLabel || "Cancelar";
   const yesClass = store.overlay.yesStyle === "accent" ? "footer-btn primary" : store.overlay.yesStyle === "danger" ? "footer-btn danger" : "footer-btn";

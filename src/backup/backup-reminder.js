@@ -30,10 +30,10 @@ function toMs(iso) {
 export function workoutsSinceBackup(sessions, workouts, lastBackupAt) {
   const since = toMs(lastBackupAt);
   let n = 0;
-  Object.keys(sessions || {}).forEach(dateKey => {
+  Object.keys(sessions || {}).forEach((dateKey) => {
     const v = sessions[dateKey];
     const arr = Array.isArray(v) ? v : v ? [v] : [];
-    arr.forEach(s => {
+    arr.forEach((s) => {
       if (!s || !s.endedAt) return;
       if (s.letter && workouts && workouts[s.letter] && workouts[s.letter].isRest) return;
       if (since === null || s.endedAt > since) n++;

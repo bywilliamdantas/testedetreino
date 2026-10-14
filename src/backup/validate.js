@@ -2,6 +2,11 @@ import { SCHEMA_VERSION, SET_TYPES } from "../data/constants.js";
 
 const SET_NUMERIC_FIELDS = ["weight", "reps", "minutes"];
 
+/* Chaves de treino e ids vão para atributos HTML (data-letter, data-exid…):
+   só letras, números, "_" e "-". Qualquer outra coisa num arquivo importado é recusada. */
+const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
+export const isSafeId = (v) => typeof v === "string" && SAFE_ID.test(v);
+
 /* Valor numérico de uma série: número finito e >= 0. Texto numérico ("40", "42,5") vira número.
    Qualquer outra coisa (NaN, Infinity, negativo, texto, objeto) vira null. Devolve [valor, mudou]. */
 function cleanSetNumber(v) {
@@ -18,7 +23,7 @@ function cleanSetNumber(v) {
 /* Conserta uma série no lugar. Devolve true se mudou alguma coisa. */
 function cleanSet(s) {
   let changed = false;
-  SET_NUMERIC_FIELDS.forEach(f => {
+  SET_NUMERIC_FIELDS.forEach((f) => {
     if (!(f in s)) return;
     const [val, ch] = cleanSetNumber(s[f]);
     if (ch) {
@@ -37,11 +42,16 @@ function cleanSet(s) {
    campos inválidos viram null / "normal". Soma em `stats` (fixed = séries consertadas,
    dropped = entradas descartadas). */
 function cleanLog(log, stats) {
-  Object.keys(log).forEach(exId => {
+  Object.keys(log).forEach((exId) => {
+    if (!isSafeId(exId)) {
+      delete log[exId];
+      stats.dropped++;
+      return;
+    }
     const v = log[exId];
     if (Array.isArray(v)) {
       const kept = [];
-      v.forEach(s => {
+      v.forEach((s) => {
         if (!s || typeof s !== "object" || Array.isArray(s)) {
           stats.dropped++;
           return;
@@ -62,14 +72,15 @@ function cleanLog(log, stats) {
 
 /* Valida as sessões: descarta sessões que não são objetos e limpa o conteúdo das séries. */
 function cleanSessions(sessions, stats) {
-  Object.keys(sessions).forEach(k => {
+  Object.keys(sessions).forEach((k) => {
     const v = sessions[k];
     const list = Array.isArray(v) ? v : [v];
     const kept = [];
-    list.forEach(sess => {
+    list.forEach((sess) => {
       if (!sess || typeof sess !== "object" || Array.isArray(sess)) {
-        if (typeof sess !== "string") stats.dropped++; // string = formato antigo (só a letra do treino)
-        else kept.push(sess);
+        if (typeof sess === "string" && isSafeId(sess))
+          kept.push(sess); // formato antigo (só a letra do treino)
+        else stats.dropped++;
         return;
       }
       if (sess.log !== undefined && (!sess.log || typeof sess.log !== "object" || Array.isArray(sess.log))) {
@@ -77,6 +88,19 @@ function cleanSessions(sessions, stats) {
         stats.dropped++;
       }
       if (sess.log) cleanLog(sess.log, stats);
+      if ("id" in sess && !isSafeId(sess.id)) delete sess.id; // a migração gera um id novo
+      if (sess.letter != null && !isSafeId(sess.letter)) {
+        sess.letter = null;
+        stats.dropped++;
+      }
+      if (Array.isArray(sess.snapshot)) {
+        const snap = sess.snapshot.filter((ex) => ex && typeof ex === "object" && isSafeId(ex.id));
+        stats.dropped += sess.snapshot.length - snap.length;
+        sess.snapshot = snap;
+      } else if (sess.snapshot !== undefined) {
+        delete sess.snapshot;
+        stats.dropped++;
+      }
       kept.push(sess);
     });
     if (Array.isArray(v)) sessions[k] = kept;
@@ -95,10 +119,11 @@ export function importFixMessage(v) {
 }
 
 export function validateBackup(p) {
-  if (!p || typeof p !== "object" || Array.isArray(p)) return {
-    ok: false,
-    error: "Arquivo inválido"
-  };
+  if (!p || typeof p !== "object" || Array.isArray(p))
+    return {
+      ok: false,
+      error: "Arquivo inválido"
+    };
   if (typeof p.schemaVersion === "number" && p.schemaVersion > SCHEMA_VERSION) {
     return {
       ok: false,
@@ -111,27 +136,41 @@ export function validateBackup(p) {
       error: "Formato de backup inválido"
     };
   }
-  const consistent = p.order.every(k => typeof k === "string" && p.workouts[k] && typeof p.workouts[k] === "object");
-  if (!consistent) return {
-    ok: false,
-    error: "Backup com treinos inconsistentes"
+  const consistent = p.order.every((k) => typeof k === "string" && p.workouts[k] && typeof p.workouts[k] === "object");
+  if (!consistent)
+    return {
+      ok: false,
+      error: "Backup com treinos inconsistentes"
+    };
+  if (!p.order.every(isSafeId) || !Object.keys(p.workouts).every(isSafeId))
+    return {
+      ok: false,
+      error: "Backup com nomes de treino inválidos"
+    };
+  const stats = {
+    fixed: 0,
+    dropped: 0
   };
-  Object.values(p.workouts).forEach(w => {
+  Object.values(p.workouts).forEach((w) => {
+    if (!w || typeof w !== "object") return;
     if (!Array.isArray(w.exercises)) w.exercises = [];
     if (typeof w.name !== "string") w.name = "Treino";
-    w.exercises = w.exercises.filter(e => e && typeof e === "object" && e.id);
+    const before = w.exercises.length;
+    w.exercises = w.exercises.filter((e) => e && typeof e === "object" && isSafeId(e.id));
+    stats.dropped += before - w.exercises.length;
   });
+  if (Array.isArray(p.body)) {
+    p.body.forEach((b) => {
+      if (b && typeof b === "object" && "id" in b && !isSafeId(b.id)) delete b.id; // a migração gera um id novo
+    });
+  }
   if (p.sessions && typeof p.sessions === "object" && !Array.isArray(p.sessions)) {
-    Object.keys(p.sessions).forEach(k => {
+    Object.keys(p.sessions).forEach((k) => {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) delete p.sessions[k];
     });
   } else {
     p.sessions = {};
   }
-  const stats = {
-    fixed: 0,
-    dropped: 0
-  };
   cleanSessions(p.sessions, stats);
   return {
     ok: true,
@@ -145,9 +184,12 @@ export async function deliverFile(content, filename, mime, shareTitle) {
     const file = new File([content], filename, {
       type: mime
     });
-    if (navigator.canShare && navigator.canShare({
-      files: [file]
-    })) {
+    if (
+      navigator.canShare &&
+      navigator.canShare({
+        files: [file]
+      })
+    ) {
       await navigator.share({
         files: [file],
         title: shareTitle

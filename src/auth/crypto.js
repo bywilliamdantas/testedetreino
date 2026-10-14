@@ -12,7 +12,9 @@ export const PASSWORD_MIN_ITERATIONS = 100000;
 export async function sha256Hex(str) {
   const enc = new TextEncoder().encode(str);
   const buf = await crypto.subtle.digest("SHA-256", enc);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function fetchUsers() {
@@ -49,20 +51,23 @@ export async function verifyPassword(u, password) {
 export async function tryLogin(username, password) {
   username = (username || "").trim();
   password = (password || "").replace(/^\s+|\s+$/g, "");
-  if (!username || !password) return {
-    ok: false,
-    msg: "Preencha usuário e senha."
-  };
+  if (!username || !password)
+    return {
+      ok: false,
+      msg: "Preencha usuário e senha."
+    };
   const users = await fetchUsers();
-  if (!users) return {
-    ok: false,
-    msg: "Não foi possível verificar o login (sem conexão e sem dados salvos ainda)."
-  };
-  const u = users.find(x => x.username.toLowerCase() === username.toLowerCase());
-  if (!u) return {
-    ok: false,
-    msg: "Usuário ou senha inválidos."
-  };
+  if (!users)
+    return {
+      ok: false,
+      msg: "Não foi possível verificar o login (sem conexão e sem dados salvos ainda)."
+    };
+  const u = users.find((x) => x.username.toLowerCase() === username.toLowerCase());
+  if (!u)
+    return {
+      ok: false,
+      msg: "Usuário ou senha inválidos."
+    };
   let good;
   try {
     good = await verifyPassword(u, password);
@@ -72,10 +77,11 @@ export async function tryLogin(username, password) {
       msg: "Não foi possível verificar a senha neste navegador."
     };
   }
-  if (!good) return {
-    ok: false,
-    msg: "Usuário ou senha inválidos."
-  };
+  if (!good)
+    return {
+      ok: false,
+      msg: "Usuário ou senha inválidos."
+    };
   return {
     ok: true,
     user: {

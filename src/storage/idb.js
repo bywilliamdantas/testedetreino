@@ -62,7 +62,7 @@ export function openDb() {
     };
     req.onerror = () => reject(req.error || new Error("indexeddb-open-failed"));
     req.onblocked = () => reject(new Error("indexeddb-blocked"));
-  }).catch(e => {
+  }).catch((e) => {
     dbPromise = null; // permite nova tentativa depois
     throw e;
   });
@@ -101,15 +101,18 @@ export function isQuotaError(e) {
   return !!e && (e.name === "QuotaExceededError" || e.code === 22 || e.code === 1014);
 }
 
-export const idbGet = (storeName, key) => runTx(storeName, "readonly", s => {
-  const r = s.get(key);
-  return () => r.result;
-});
+export const idbGet = (storeName, key) =>
+  runTx(storeName, "readonly", (s) => {
+    const r = s.get(key);
+    return () => r.result;
+  });
 
-export const idbPut = (storeName, value) => runTx(storeName, "readwrite", s => {
-  s.put(value);
-});
+export const idbPut = (storeName, value) =>
+  runTx(storeName, "readwrite", (s) => {
+    s.put(value);
+  });
 
-export const idbDelete = (storeName, key) => runTx(storeName, "readwrite", s => {
-  s.delete(key);
-});
+export const idbDelete = (storeName, key) =>
+  runTx(storeName, "readwrite", (s) => {
+    s.delete(key);
+  });
