@@ -9,14 +9,14 @@
   }
   .backup-hero .bh-icon{
     width:42px; height:42px; border-radius:50%; flex-shrink:0;
-    background:var(--ok); color:#fff;
+    background:var(--ok); color:var(--white);
     display:flex; align-items:center; justify-content:center;
   }
   .backup-hero .bh-info{ flex:1; min-width:0; }
   .backup-hero .bh-title{ font-size:15px; font-weight:800; color:var(--ok); }
   .backup-hero .bh-sub{ font-size:12px; color:var(--text-muted); margin-top:2px; }
   .settings-section{
-    font-size:11px; font-weight:700; letter-spacing:0.08em;
+    font-size:12px; font-weight:700; letter-spacing:0.08em;
     color:var(--text-label); text-transform:uppercase;
     margin:20px 4px 10px;
   }
@@ -35,7 +35,7 @@
   }
   .settings-row .sr-info{ flex:1; min-width:0; }
   .settings-row .sr-title{ font-size:14px; font-weight:700; }
-  .settings-row .sr-sub{ font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+  .settings-row .sr-sub{ font-size:12px; color:var(--text-muted); margin-top:2px; }
   .settings-row .sr-chevron{ color:var(--text-muted); flex-shrink:0; display:flex; }
 
 
@@ -52,8 +52,8 @@
     font-size:12.5px; line-height:1.45; font-weight:600;
     border-radius:var(--r-sm); padding:10px 12px; margin-bottom:10px;
   }
-  .usage-alert.warn{ background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-border); }
-  .usage-alert.crit{ background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger-border); }
+  .usage-alert.warn{ background:var(--accent-soft); color:var(--accent-text); border:1px solid var(--accent-border); }
+  .usage-alert.crit{ background:var(--danger-bg); color:var(--danger-text); border:1px solid var(--danger-border); }
   .usage-meter + .usage-meter{ margin-top:12px; }
   .usage-row{ display:flex; justify-content:space-between; gap:8px; font-size:12px; margin-bottom:6px; }
   .usage-label{ font-weight:700; color:var(--text-primary); }
@@ -62,9 +62,13 @@
   .usage-bar i{ display:block; height:100%; width:var(--pct); border-radius:99px; background:var(--ok); }
   .usage-bar.warn i{ background:var(--accent); }
   .usage-bar.crit i{ background:var(--danger); }
-  .usage-breakdown{ display:flex; flex-direction:column; gap:2px; font-size:11.5px; color:var(--text-muted); margin:8px 0 12px; }
+  .usage-breakdown{ display:flex; flex-direction:column; gap:2px; font-size:12px; color:var(--text-muted); margin:8px 0 12px; }
   .usage-breakdown b{ color:var(--text-secondary); font-weight:700; }
-  .usage-foot{ font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.45; }
+  .usage-foot{ font-size:12px; color:var(--text-muted); margin-top:10px; line-height:1.45; }
+
+  /* ---------- convite de backup (banner da Início) ---------- */
+  .banner-actions{ display:flex; align-items:center; gap:14px; flex-shrink:0; }
+  .banner .banner-actions button.muted{ color:var(--text-muted); font-weight:600; }
 
   /* ---------- conta: PIN e sessão ---------- */
   .conta-extra{ padding:0 var(--s4); margin-top:var(--s3); }
@@ -75,15 +79,15 @@
     background:var(--surface-3); border:1px solid var(--divider);
     border-radius:var(--r-sm); padding:8px 10px;
   }
-  .idle-hint{ font-size:11.5px; color:var(--text-muted); margin-top:8px; line-height:1.45; }
+  .idle-hint{ font-size:12px; color:var(--text-muted); margin-top:8px; line-height:1.45; }
   .pin-field{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; font-size:12.5px; font-weight:700; color:var(--text-label); }
   .pin-field input{
     font:inherit; font-size:16px; color:var(--text-primary); background:var(--surface-3);
     border:1px solid var(--divider); border-radius:var(--r-sm); padding:12px;
   }
   .pin-field input.pin-digits{ letter-spacing:0.5em; text-align:center; font-weight:800; }
-  .pin-error{ min-height:18px; font-size:12.5px; font-weight:600; color:var(--danger); margin:2px 0 10px; }
-  .pin-note{ font-size:11.5px; color:var(--text-muted); line-height:1.5; margin:0 0 14px; }
+  .pin-error{ min-height:18px; font-size:12.5px; font-weight:600; color:var(--danger-text); margin:2px 0 10px; }
+  .pin-note{ font-size:12px; color:var(--text-muted); line-height:1.5; margin:0 0 14px; }
 
   .backups-note{ font-size:12.5px; color:var(--text-muted); margin:0 0 14px; line-height:1.5; }
   .card.list{ padding:0 var(--s4); }

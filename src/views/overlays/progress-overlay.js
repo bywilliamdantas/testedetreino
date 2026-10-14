@@ -7,10 +7,12 @@ import { fmtW, toDisp, unit } from "../../utils/format.js";
 import { isCardio } from "../../utils/numbers.js";
 import { closeOverlay } from "./overlay-manager.js";
 
+/* Os rótulos do eixo são 13 unidades do viewBox (300 de largura): renderizam ≥12px
+   mesmo na tela mais estreita (320px, escala ≈0,95). padL abre espaço para eles. */
 export function buildLineChart(hist, unit) {
   const w = 300,
     h = 140,
-    padL = 34,
+    padL = 46,
     padR = 14,
     padT = 14,
     padB = 24;
@@ -38,8 +40,8 @@ export function buildLineChart(hist, unit) {
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" aria-label="Gráfico de evolução">
     <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${h - padB}" stroke="var(--divider)" stroke-width="1"/>
     <line x1="${padL}" y1="${h - padB}" x2="${w - padR}" y2="${h - padB}" stroke="var(--divider)" stroke-width="1"/>
-    <text x="4" y="${padT + 4}" font-size="9" fill="var(--text-muted)">${max}${unit}</text>
-    <text x="4" y="${h - padB + 4}" font-size="9" fill="var(--text-muted)">${min}${unit}</text>
+    <text x="4" y="${padT + 4}" font-size="13" fill="var(--text-muted)">${max}${unit}</text>
+    <text x="4" y="${h - padB + 4}" font-size="13" fill="var(--text-muted)">${min}${unit}</text>
     <path d="${linePath}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
     ${circles}
   </svg>`;
@@ -78,10 +80,10 @@ export function renderProgressOverlay(root) {
     }).join("")}</div>`;
   }
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <div class="sheet" role="dialog" aria-modal="true" aria-label="Progresso do exercício">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-date">${escapeHtml(name)}</div>
+      <div class="sheet-date" id="sheetTitle"><span class="sr-only">Progresso: </span>${escapeHtml(name)}</div>
       <button class="icon-btn" id="sheetClose" aria-label="fechar">${ICONS.close}</button>
     </div>
     ${body}

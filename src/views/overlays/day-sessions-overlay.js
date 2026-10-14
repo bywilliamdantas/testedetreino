@@ -1,6 +1,7 @@
 import { MONTH_NAMES_FULL, WEEKDAY_FULL } from "../../data/constants.js";
 import { ICONS } from "../../data/icons.js";
 import { persist } from "../../persistence.js";
+import { markSessionsDirty } from "../../storage/session-store.js";
 import { store } from "../../store.js";
 import { colorFor, toneVars } from "../../ui/helpers.js";
 import { showToast } from "../../ui/toast.js";
@@ -21,10 +22,10 @@ export function renderDaySessionsOverlay(root) {
   const d = new Date(y, m - 1, dd);
   const dateLabel = `${WEEKDAY_FULL[d.getDay()]}, ${dd} de ${MONTH_NAMES_FULL[m - 1]}`;
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <div class="sheet" role="dialog" aria-modal="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-date">${escapeHtml(dateLabel)}</div>
+      <div class="sheet-date" id="sheetTitle"><span class="sr-only">Treinos do dia: </span>${escapeHtml(dateLabel)}</div>
       <button class="icon-btn" id="sheetClose" aria-label="fechar">${ICONS.close}</button>
     </div>
     <p class="day-sessions-count">${arr.length} treinos neste dia</p>
@@ -71,6 +72,7 @@ export function renderDaySessionsOverlay(root) {
       const removed = before[origIdx];
       const arr2 = before.filter(x => x.id !== sessionId);
       if (arr2.length) store.data.sessions[dateKey] = arr2;else delete store.data.sessions[dateKey];
+      markSessionsDirty(dateKey);
       store.overlay = null;
       render();
       persist();
@@ -81,6 +83,7 @@ export function renderDaySessionsOverlay(root) {
           if (cur.some(x => x.id === removed.id)) return;
           cur.splice(Math.min(origIdx, cur.length), 0, removed);
           store.data.sessions[dateKey] = cur;
+          markSessionsDirty(dateKey);
           render();
           await persist();
           showToast("Sessão restaurada");

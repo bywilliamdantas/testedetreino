@@ -46,6 +46,8 @@ export const store = {
         lastNotifiedDate: null
       },
       lastBackupAt: null,
+      backupEvery: 7,
+      backupSnoozedUntil: null,
       workoutsCollapsed: false,
       collapsedSections: {},
       restDuration: 90,

@@ -1,4 +1,5 @@
 import { persist } from "../persistence.js";
+import { markSessionsDirty } from "../storage/session-store.js";
 import { store } from "../store.js";
 import { showToast } from "../ui/toast.js";
 import { haptic, prefersReducedMotion } from "../utils/dom.js";
@@ -75,6 +76,7 @@ export function endActiveSession() {
     });
   }
   store.data.sessions[dateKey] = arr;
+  markSessionsDirty(dateKey);
   a.state = "idle";
   a.letter = null;
   a.elapsedMs = 0;

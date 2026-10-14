@@ -2,9 +2,11 @@ import { playBeep, unlockAudio } from "./audio/beep.js";
 import { setAvatar } from "./storage/avatar.js";
 import { doLogout, hasActiveWorkout, writeIdleDays } from "./auth/session.js";
 import { openPinSheet } from "./views/pin-view.js";
+import { normalizeBackupEvery, snoozeUntilIso } from "./backup/backup-reminder.js";
 import { exportBackup, exportCsv } from "./backup/import-export.js";
-import { validateBackup } from "./backup/validate.js";
+import { importFixMessage, validateBackup } from "./backup/validate.js";
 import { newExId, newRestKey } from "./counters.js";
+import { isSelectableGroup } from "./exercises/exercises.js";
 import { loadData, persist } from "./persistence.js";
 import { closePerfil, goTab, openPerfil } from "./router.js";
 import { store } from "./store.js";
@@ -97,6 +99,21 @@ export function attachHandlers() {
   });
   const backupNowBtn = $("backupNowBtn");
   if (backupNowBtn) backupNowBtn.addEventListener("click", exportBackup);
+  const backupSnoozeBtn = $("backupSnoozeBtn");
+  if (backupSnoozeBtn) backupSnoozeBtn.addEventListener("click", async () => {
+    store.data.settings.backupSnoozedUntil = snoozeUntilIso();
+    render();
+    await persist();
+  });
+  const backupEverySelect = $("backupEverySelect");
+  if (backupEverySelect) backupEverySelect.addEventListener("change", async e => {
+    const n = normalizeBackupEvery(parseInt(e.target.value, 10));
+    store.data.settings.backupEvery = n;
+    store.data.settings.backupSnoozedUntil = null;
+    render();
+    await persist();
+    showToast(n === 0 ? "Lembrete de backup desligado" : `Sugerir backup a cada ${n} treinos`);
+  });
   const pinRowBtn = $("pinRowBtn");
   if (pinRowBtn) pinRowBtn.addEventListener("click", () => {
     haptic(6);
@@ -321,6 +338,16 @@ export function attachHandlers() {
       if ((ex.type || "strength") === newType) return;
       ex.type = newType;
       render();
+      await persist();
+    });
+  });
+  document.querySelectorAll('[data-role="exgroup"]').forEach(el => {
+    el.addEventListener("change", async () => {
+      const w = store.data.workouts[el.dataset.letter];
+      const ex = w && w.exercises.find(e => e.id === el.dataset.exid);
+      if (!ex) return;
+      if (isSelectableGroup(el.value)) ex.group = el.value;else delete ex.group;
+      haptic(6);
       await persist();
     });
   });
@@ -576,6 +603,8 @@ export function attachHandlers() {
         return;
       }
       openImportChoice(parsed);
+      const fixMsg = importFixMessage(v);
+      if (fixMsg) showToast(fixMsg);
     } catch (e) {
       showToast("Arquivo inválido");
     }

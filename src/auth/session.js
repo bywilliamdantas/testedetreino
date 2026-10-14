@@ -1,10 +1,12 @@
 import { bootApp } from "../boot.js";
 import { SESSION_KEY } from "../config.js";
-import { AUTOBACKUP_KEY, SESSION_IDLE_DAYS, STORAGE_KEY } from "../data/constants.js";
+import { AUTOBACKUP_KEY, CORE_KEY, SESSION_IDLE_DAYS, STORAGE_KEY } from "../data/constants.js";
 import { getTabFromHash } from "../router.js";
+import { persistOnHide } from "../persistence.js";
 import { store } from "../store.js";
 import { showToast } from "../ui/toast.js";
 import { renderLogin } from "../views/login-view.js";
+import { renderOverlay } from "../views/overlays/overlay-manager.js";
 import { fetchUsers, tryLogin } from "./crypto.js";
 import { isValidPin, resetPinFails, verifyPin } from "./pin.js";
 
@@ -90,7 +92,8 @@ export function hasActiveWorkout(username) {
     if (store.currentUser && (!username || store.currentUser.username === username) && store.data.activeSession && active(store.data.activeSession.state)) return true;
   } catch (e) {}
   try {
-    const raw = username ? window.localStorage.getItem(`${STORAGE_KEY}:${username}`) : null;
+    // núcleo (v8.6) tem prioridade: a cópia antiga fica com activeSession desatualizado
+    const raw = username ? window.localStorage.getItem(`${CORE_KEY}:${username}`) || window.localStorage.getItem(`${STORAGE_KEY}:${username}`) : null;
     const d = raw ? JSON.parse(raw) : null;
     return !!(d && d.activeSession && active(d.activeSession.state));
   } catch (e) {}
@@ -178,6 +181,7 @@ export function enforceSessionExpiry() {
   if (!still) {
     store.currentUser = null;
     store.overlay = null;
+    renderOverlay(); // fecha o painel aberto e tira o inert do fundo, senão o login ficaria inerte
     try {
       window.location.hash = "";
     } catch (e) {}
@@ -249,10 +253,12 @@ export async function doLoginPin(username, pin, keep) {
 }
 
 export function doLogout() {
+  persistOnHide(); // grava o núcleo e inicia o flush das sessões antes de trocar de usuário
   clearSession();
   store.currentUser = null;
   store.authError = "";
   store.overlay = null;
+  renderOverlay();
   try {
     window.location.hash = "";
   } catch (e) {}

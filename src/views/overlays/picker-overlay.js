@@ -2,7 +2,7 @@ import { newExId } from "../../counters.js";
 import { EXERCISE_LIBRARY } from "../../data/exercise-library.js";
 import { ICONS } from "../../data/icons.js";
 import { exThumbHtml } from "../../exercises/exercise-visuals.js";
-import { SELECTABLE_GROUPS, customGroupFor, getAllExerciseNames, getCustomExerciseNames, getLibraryNameSet, isCardioName, isSelectableGroup } from "../../exercises/exercises.js";
+import { customGroupFor, groupOptionsHtml, getAllExerciseNames, getCustomExerciseNames, getLibraryNameSet, isCardioName, isSelectableGroup } from "../../exercises/exercises.js";
 import { persist } from "../../persistence.js";
 import { store } from "../../store.js";
 import { colorFor, toneVars } from "../../ui/helpers.js";
@@ -19,10 +19,10 @@ export function renderPickerOverlay(root) {
     dateKey
   } = store.overlay;
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <div class="sheet" role="dialog" aria-modal="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-date">Escolher treino</div>
+      <div class="sheet-date" id="sheetTitle">Escolher treino</div>
       <button class="icon-btn" id="sheetClose" aria-label="fechar">${ICONS.close}</button>
     </div>
     <div class="sheet-picker">
@@ -57,13 +57,13 @@ export function renderExercisePickerOverlay(root) {
     mode
   } = store.overlay;
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <div class="sheet" role="dialog" aria-modal="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-date">${mode === "rename" ? "Escolher exercício" : "Adicionar exercícios"}</div>
+      <div class="sheet-date" id="sheetTitle">${mode === "rename" ? "Escolher exercício" : "Adicionar exercícios"}</div>
       <button class="icon-btn" id="sheetClose" aria-label="fechar">${ICONS.close}</button>
     </div>
-    <input type="text" id="exPickerSearch" class="ex-picker-search" placeholder="Buscar ou digitar um novo nome…" value="${escapeAttr(store.overlay.query)}" autocomplete="off" autocapitalize="sentences">
+    <input type="text" id="exPickerSearch" class="ex-picker-search" data-autofocus placeholder="Buscar ou digitar um novo nome…" value="${escapeAttr(store.overlay.query)}" autocomplete="off" autocapitalize="sentences">
     <div class="ex-picker-list" id="exPickerList"></div>
     ${mode === "add" ? `<button class="footer-btn primary picker-confirm" id="exPickerConfirm">Adicionar selecionados</button>` : ""}
   </div>`;
@@ -134,8 +134,7 @@ function groupSelectHtml() {
   return `<label class="ex-picker-group-select">
     <span>Grupo muscular</span>
     <select id="exPickerGroup" aria-label="Grupo muscular do novo exercício">
-      <option value="">Outros (sem grupo)</option>
-      ${SELECTABLE_GROUPS.map(g => `<option value="${escapeAttr(g)}" ${g === cur ? "selected" : ""}>${escapeHtml(g)}</option>`).join("")}
+      ${groupOptionsHtml(cur)}
     </select>
   </label>`;
 }

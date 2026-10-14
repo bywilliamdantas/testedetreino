@@ -1,16 +1,18 @@
 /* ============================================================
    IndexedDB — camada fina e sem dependências.
    Guarda o que NÃO precisa ser lido de forma síncrona e que pesa:
-   foto de perfil e backups automáticos. Os dados principais continuam
-   no localStorage (leitura síncrona no boot e gravação no beforeunload,
-   que o IndexedDB não consegue garantir).
+   foto de perfil, backups automáticos e (v8.6) o histórico de sessões, um
+   registro por dia. Configurações e treinos continuam no localStorage
+   (leitura síncrona no boot); o que ainda não foi confirmado aqui fica num
+   diário no localStorage (src/storage/session-store.js).
    ============================================================ */
 
 export const DB_NAME = "meus-treinos";
-export const DB_VERSION = 1;
+export const DB_VERSION = 2; // v2 (v8.6): + store "sessions"
 export const ST_AVATARS = "avatars"; // chave: user
 export const ST_BACKUPS = "autobackups"; // chave: id (índice por user)
 export const ST_META = "meta"; // chave: key
+export const ST_SESSIONS = "sessions"; // chave: "user|AAAA-MM-DD" (índice por user)
 
 let dbPromise = null;
 
@@ -41,6 +43,10 @@ export function openDb() {
       if (!db.objectStoreNames.contains(ST_AVATARS)) db.createObjectStore(ST_AVATARS, { keyPath: "user" });
       if (!db.objectStoreNames.contains(ST_BACKUPS)) {
         const s = db.createObjectStore(ST_BACKUPS, { keyPath: "id" });
+        s.createIndex("user", "user", { unique: false });
+      }
+      if (!db.objectStoreNames.contains(ST_SESSIONS)) {
+        const s = db.createObjectStore(ST_SESSIONS, { keyPath: "id" });
         s.createIndex("user", "user", { unique: false });
       }
       if (!db.objectStoreNames.contains(ST_META)) db.createObjectStore(ST_META, { keyPath: "key" });
@@ -83,10 +89,10 @@ export async function runTx(storeName, mode, work) {
     try {
       out = work(tx.objectStore(storeName), tx);
     } catch (e) {
+      reject(e); // o erro original (ex.: QuotaExceededError) vence o do abort
       try {
         tx.abort();
       } catch (_) {}
-      reject(e);
     }
   });
 }

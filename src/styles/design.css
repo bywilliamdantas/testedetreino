@@ -56,11 +56,11 @@ body{ width:100%; }
   background:var(--surface); border:1px solid var(--card-border); color:var(--text-secondary);
   border-radius:var(--r-ctl); font-size:13px; padding:12px 14px;
 }
-.banner button{ color:var(--accent); text-decoration:none; font-weight:700; }
-.banner:not(.info){ border-color:var(--danger-border); color:var(--danger); }
+.banner button{ color:var(--accent-text); text-decoration:none; font-weight:700; }
+.banner:not(.info){ border-color:var(--danger-border); color:var(--danger-text); }
 
 /* ---------- Home: saudação ---------- */
-.greet-avatar{ background:var(--ink); color:#fff; }
+.greet-avatar{ background:var(--ink); color:var(--white); }
 .greet-bell{ background:transparent; }
 
 /* ---------- Home: HERO, o elemento marcante (precisa vir depois de .card) ---------- */
@@ -70,7 +70,7 @@ body{ width:100%; }
       rgba(255,255,255,.14) 59px 60px, transparent 61px 84px, rgba(255,255,255,.08) 85px 86px, transparent 87px 112px,
       rgba(255,255,255,.05) 113px 114px, transparent 115px),
     linear-gradient(160deg, var(--ink-2) 0%, var(--ink) 60%);
-  color:#fff;
+  color:var(--white);
   border:none;
   border-radius:var(--r-hero);
   padding:20px;
@@ -79,19 +79,19 @@ body{ width:100%; }
 }
 .hero-card-v2 .hero-muscle{ display:none; }
 .hero-card-v2 .hero-v2-badge{
-  background:var(--hero-badge-bg); border-color:transparent; color:#fff;
+  background:var(--hero-badge-bg); border-color:transparent; color:var(--white);
   font-size:12.5px; letter-spacing:0; text-transform:none; font-weight:600;
 }
-.hero-card-v2 .hero-clock{ background:var(--on-ink-fill); border-color:transparent; color:#fff; }
+.hero-card-v2 .hero-clock{ background:var(--on-ink-fill); border-color:transparent; color:var(--white); }
 .hero-v2-name{ font-size:30px; letter-spacing:-0.035em; line-height:1.08; margin-bottom:6px; }
 .hero-v2-sub{ color:var(--on-ink-text); font-size:14px; margin-top:2px; }
 .hero-v2-body{ max-width:none; margin:18px 0 20px; }
 .hero-v2-btn{ height:52px; border-radius:16px; font-size:15.5px; }
-.hero-v2-btn.primary{ background:linear-gradient(180deg,#ff7048,#ff5a36); box-shadow:var(--shadow-cta); }
-.hero-v2-btn.ghost{ background:var(--on-ink-fill); color:#fff; border-color:transparent; }
+.hero-v2-btn.primary{ background:linear-gradient(180deg,var(--accent-hi),var(--accent)); box-shadow:var(--shadow-cta); }
+.hero-v2-btn.ghost{ background:var(--on-ink-fill); color:var(--white); border-color:transparent; }
 .hero-v2-link{ color:var(--on-ink-text-soft); font-size:13px; }
-.hero-v2-chip{ background:var(--on-ink-fill); border-color:transparent; color:#fff; min-height:44px; font-size:12.5px; }
-.hero-v2-chip.undo{ color:#ff8a9b; }
+.hero-v2-chip{ background:var(--on-ink-fill); border-color:transparent; color:var(--white); min-height:44px; font-size:12.5px; }
+.hero-v2-chip.undo{ color:var(--danger-on-ink); }
 
 /* ---------- Home: estatísticas em uma faixa só, números grandes ---------- */
 .stats-row-v3{
@@ -101,14 +101,14 @@ body{ width:100%; }
 .stat-card-v3{ background:transparent; border:none; border-radius:0; padding:18px 8px 16px; }
 .stat-card-v3 + .stat-card-v3{ border-left:1px solid var(--divider); }
 .stat-card-v3 .stat-num{ font-size:40px; letter-spacing:-0.04em; color:var(--text-primary); }
-.stat-card-v3.streak .stat-num{ color:var(--accent); }
+.stat-card-v3.streak .stat-num{ color:var(--accent-text); }
 .stat-card-v3.week .stat-num, .stat-card-v3.month .stat-num{ color:var(--text-primary); }
 .stat-card-v3 .stat-label{ font-size:12px; letter-spacing:0; text-transform:none; font-weight:600; }
 
 /* ---------- Home: dias da semana ---------- */
 .week-dot{ width:34px; height:34px; background:var(--surface-3); border:none; }
 .week-dot.today{ box-shadow:0 0 0 2px var(--accent); background:var(--surface); }
-.week-dot-label{ font-size:11.5px; }
+.week-dot-label{ font-size:12px; }
 
 /* ---------- tab bar flutuante ---------- */
 .tabbar{
@@ -124,12 +124,13 @@ body{ width:100%; }
 .tab-btn{ padding:4px 0; gap:2px; }
 .tab-btn.active{ color:var(--text-primary); }
 .tab-btn-icon{ width:46px; height:30px; border-radius:15px; }
-.tab-btn.active .tab-btn-icon{ background:var(--ink); color:#fff; }
-.tab-btn-label{ font-size:10.5px; font-weight:600; letter-spacing:-0.01em; }
+.tab-btn.active .tab-btn-icon{ background:var(--ink); color:var(--white); }
+.tab-btn-label{ font-size:12px; font-weight:600; letter-spacing:-0.01em; }
 
 /* ---------- sheets ---------- */
 .sheet-backdrop{ background:rgba(10,8,14,0.5); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
 .sheet{ border-radius:var(--r-sheet) var(--r-sheet) 0 0; }
+.sheet:focus-visible{ outline:none; } /* o painel recebe foco só como reserva (tabindex -1): sem anel em volta da folha */
 .sheet-handle{ width:40px; height:5px; background:var(--divider); }
 .sheet-ex-name{ font-size:15px; letter-spacing:-0.01em; }
 .sheet-ex-last{ font-size:12px; }
@@ -152,6 +153,9 @@ body{ width:100%; }
 .sheet-set-num, .sheet-set-check{ width:40px; height:40px; font-size:13px; }
 .sheet-set-check{ background:var(--surface-3); }
 .sheet-set-check:active{ transform:scale(0.92); }
+/* alvo de toque de 44px sem mexer na linha da série (já apertada): área invisível de 2px em volta do círculo de 40px */
+.sheet-set-check{ position:relative; }
+.sheet-set-check::after{ content:""; position:absolute; inset:calc((40px - var(--tap)) / 2); }
 .step-group{ min-height:46px; border-radius:var(--r-ctl); }
 .step-value{ font-size:24px; }
 .sheet-set.done .step-group{ background:var(--ok-bg); border-color:var(--ok-border); opacity:1; }
@@ -164,16 +168,16 @@ body{ width:100%; }
   left:12px; right:12px; max-width:406px;
   /* --rest-bottom é medida em JS (rest-timer.js): fica acima da tab bar, ou rente ao rodapé sob a folha do dia */
   bottom:var(--rest-bottom, calc(88px + env(safe-area-inset-bottom)));
-  background:var(--ink); color:#fff; border:none; border-radius:var(--r-float);
+  background:var(--ink); color:var(--white); border:none; border-radius:var(--r-float);
   padding:12px 14px; box-shadow:var(--shadow-float-ink);
 }
 .rest-ring{ width:52px; height:52px; }
 .rest-ring .ring-bg{ stroke:var(--on-ink-line); stroke-width:4; }
 .rest-ring .ring-fg{ stroke:var(--accent); stroke-width:4; }
 .rest-label{ color:var(--on-ink-text-soft); font-size:12px; }
-.rest-time{ font-size:30px; color:#fff; }
-.rest-btn{ background:var(--on-ink-fill-strong); color:#fff; border-color:transparent; min-height:44px; padding:0 16px; border-radius:var(--r-ctl); font-size:14px; }
-.rest-btn.primary{ background:var(--accent); }
+.rest-time{ font-size:30px; color:var(--white); }
+.rest-btn{ background:var(--on-ink-fill-strong); color:var(--white); border-color:transparent; min-height:44px; padding:0 16px; border-radius:var(--r-ctl); font-size:14px; }
+.rest-btn.primary{ background:var(--accent); color:var(--accent-on); }
 
 /* com o timer visível, o conteúdo ganha folga para não ficar escondido atrás dele */
 .rest-on .screen{ padding-bottom:calc(var(--s4) + 92px + 92px + env(safe-area-inset-bottom)); }
@@ -181,9 +185,13 @@ body{ width:100%; }
 
 /* telas estreitas (iPhone SE/mini, Androids de 360px): timer mais compacto, sem estourar a largura */
 @media (max-width:380px){
+  /* rótulos da tab bar a 12px: menos margem lateral e entreletras apertado para não encostarem em 320px */
+  .tabbar{ left:8px; right:8px; padding:6px 2px; }
+  .tab-btn{ min-width:0; }
+  .tab-btn-label{ letter-spacing:-0.04em; }
   .rest-timer{ left:8px; right:8px; gap:8px; padding:10px 12px; border-radius:22px; }
   .rest-ring{ width:42px; height:42px; }
-  .rest-label{ font-size:11px; }
+  .rest-label{ font-size:12px; }
   .rest-btn{ padding:0 11px; font-size:13px; min-height:40px; }
 }
 
@@ -195,7 +203,8 @@ body{ width:100%; }
 .vbar-fill{ border-radius:6px 6px 3px 3px; background:var(--surface-3); }
 .vbar-fill.current{ background:var(--accent); }
 .vbar-label, .hbar-name, .hbar-val{ font-size:12px; }
-.pr-chip, .record-ico{ background:var(--accent-soft); color:var(--accent); }
+.pr-chip{ background:var(--accent-soft); color:var(--accent-text); }
+.record-ico{ background:var(--accent-soft); color:var(--accent); }
 
 /* ---------- histórico / calendário ---------- */
 .cal-grid{ gap:6px; }
@@ -220,7 +229,7 @@ body{ width:100%; }
     radial-gradient(circle at 100% 0%, transparent 0 60px, rgba(255,90,54,.85) 61px 65px, transparent 66px 110px,
       rgba(255,255,255,.12) 111px 112px, transparent 113px 170px, rgba(255,255,255,.07) 171px 172px, transparent 173px 240px,
       rgba(255,255,255,.04) 241px 242px, transparent 243px),
-    linear-gradient(170deg, var(--ink-2) 0%, #0d0b11 70%);
+    linear-gradient(170deg, var(--ink-2) 0%, var(--ink-3) 70%);
 }
 .login-logo{ border-radius:30px; box-shadow:0 18px 40px rgba(255,90,54,.3), 0 0 0 1px rgba(255,255,255,.1); }
 .login-title{ font-size:36px; letter-spacing:-0.035em; }

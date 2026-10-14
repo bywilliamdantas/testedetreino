@@ -1,10 +1,11 @@
+import { backupOffer, BACKUP_EVERY_OPTIONS, normalizeBackupEvery, workoutsSinceBackup } from "../backup/backup-reminder.js";
 import { storageStatusText } from "../backup/storage-status.js";
 import { REST_COLOR } from "../config.js";
 import { APP_VERSION, MONTH_NAMES_FULL, WEEKDAY_FULL } from "../data/constants.js";
 import { ICONS } from "../data/icons.js";
 import { attachHandlers } from "../event-handlers.js";
 import { exThumbHtml } from "../exercises/exercise-visuals.js";
-import { daysSince, exerciseHistory } from "../exercises/exercises.js";
+import { daysSince, exerciseHistory, groupOptionsHtml, isCustomExerciseName } from "../exercises/exercises.js";
 import { heroMuscleSvg } from "../icons-svg.js";
 import { store } from "../store.js";
 import { getThemePref } from "../theme.js";
@@ -62,11 +63,18 @@ export function render() {
   if (store.updateAvailable) {
     banners += `<div class="banner info"><span>Nova versão do app disponível.</span><button id="updateBtn">atualizar</button></div>`;
   }
-  const backupDays = daysSince(store.data.settings.lastBackupAt);
-  const backupDue = totalDays() > 0 && backupDays >= 14;
-  if (backupDue) {
-    const daysTxt = backupDays === Infinity ? "Você ainda não exportou um backup" : `Já fazem ${Math.floor(backupDays)} dias sem backup`;
-    banners += `<div class="banner info"><span>${daysTxt}.</span><button id="backupNowBtn">exportar</button></div>`;
+  const bkSettings = store.data.settings;
+  const bkOffer = backupOffer({
+    every: bkSettings.backupEvery,
+    lastBackupAt: bkSettings.lastBackupAt,
+    snoozedUntil: bkSettings.backupSnoozedUntil,
+    workoutsSince: workoutsSinceBackup(store.data.sessions, store.data.workouts, bkSettings.lastBackupAt),
+    hasData: totalDays() > 0
+  });
+  if (bkOffer.offer) {
+    const w = bkOffer.workouts;
+    const reasonTxt = bkOffer.reason === "never" ? "Você ainda não exportou um backup" : bkOffer.reason === "days" ? `Já fazem ${Math.floor(bkOffer.days)} dias sem backup` : `${w} treino${w === 1 ? "" : "s"} desde o último backup`;
+    banners += `<div class="banner info"><span>Fazer backup agora? ${reasonTxt}.</span><span class="banner-actions"><button id="backupNowBtn">exportar</button><button id="backupSnoozeBtn" class="muted">agora não</button></span></div>`;
   }
   const bannersHtml = banners ? `<div class="banners">${banners}</div>` : "";
   const todayDuration = totalDurationForDay(todayKey());
@@ -202,6 +210,12 @@ export function render() {
             <button class="ex-type-btn ${cardio ? "" : "active"}" data-role="extype" data-letter="${key}" data-exid="${ex.id}" data-type="strength">${ICONS.dumbbell} Força</button>
             <button class="ex-type-btn ${cardio ? "active" : ""}" data-role="extype" data-letter="${key}" data-exid="${ex.id}" data-type="cardio">${ICONS.cardio} Cardio</button>
           </div>
+          ${!cardio && isCustomExerciseName(ex.name) ? `<label class="ex-picker-group-select">
+            <span>Grupo muscular</span>
+            <select data-role="exgroup" data-letter="${key}" data-exid="${ex.id}" aria-label="Grupo muscular de ${escapeAttr(ex.name)}">
+              ${groupOptionsHtml(ex.group)}
+            </select>
+          </label>` : ""}
           <div class="ex-tools">
             <button class="tool-btn icon" data-role="exmove" data-dir="-1" data-letter="${key}" data-exid="${ex.id}" ${exIdx === 0 ? "disabled" : ""} aria-label="mover exercício para cima">${ICONS.up}</button>
             <button class="tool-btn icon" data-role="exmove" data-dir="1" data-letter="${key}" data-exid="${ex.id}" ${exIdx === w.exercises.length - 1 ? "disabled" : ""} aria-label="mover exercício para baixo">${ICONS.down}</button>
@@ -375,6 +389,7 @@ export function render() {
         <span>Horário</span>
         <input type="time" id="reminderTime" value="${r.time}" aria-label="Horário do lembrete">
       </div>
+      <div class="idle-hint" id="reminderHint">O lembrete só aparece com o app aberto: ele não toca com o app fechado.</div>
       <div class="reminder-row mt-14">
         <span>Duração do descanso padrão</span>
         <div class="step-group compact">
@@ -409,6 +424,7 @@ export function render() {
           <span class="slider"></span>
         </span>
       </label>
+      <div class="idle-hint" id="restEndHint">O aviso de fim de descanso só aparece com o app aberto.</div>
       <div class="reminder-row mt-14">
         <span>Manter a tela ligada no treino</span>
         <span class="switch">
@@ -481,6 +497,20 @@ export function render() {
     </div>
 
     ${storageUsageHtml()}
+
+    <p class="settings-section">Lembrete de backup</p>
+    <div class="card conta-extra">
+      <div class="idle-row">
+        <label class="reminder-row">
+          <span>Sugerir backup</span>
+          <select class="idle-select" id="backupEverySelect" aria-label="Frequência do lembrete de backup">
+            ${BACKUP_EVERY_OPTIONS.map(n => `<option value="${n}" ${n === normalizeBackupEvery(store.data.settings.backupEvery) ? "selected" : ""}>a cada ${n} treinos</option>`).join("")}
+            <option value="0" ${normalizeBackupEvery(store.data.settings.backupEvery) === 0 ? "selected" : ""}>desligado</option>
+          </select>
+        </label>
+        <div class="idle-hint">Ao finalizar um treino, o app sugere exportar um backup quando passar esse número de treinos ou de dias desde o último. Você pode adiar com “agora não”.</div>
+      </div>
+    </div>
 
     <p class="settings-section">Gerenciar dados</p>
     <div class="card list">

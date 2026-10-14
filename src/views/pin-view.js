@@ -17,10 +17,10 @@ export function renderPinOverlay(root) {
   const user = store.currentUser;
   const has = hasPin(user.username);
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <div class="sheet" role="dialog" aria-modal="true" aria-label="PIN de acesso">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-date">${has ? "Alterar PIN" : "Criar PIN de acesso"}</div>
+      <div class="sheet-date" id="sheetTitle">${has ? "Alterar PIN" : "Criar PIN de acesso"}</div>
       <button class="icon-btn" id="sheetClose" aria-label="fechar">${ICONS.close}</button>
     </div>
     <p class="pin-note">O PIN de 4 dígitos vale só neste aparelho e deixa o login mais rápido. Sua senha continua funcionando e é a forma de recuperar o acesso se você esquecer o PIN.</p>

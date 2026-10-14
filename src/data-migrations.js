@@ -1,3 +1,4 @@
+import { normalizeBackupEvery } from "./backup/backup-reminder.js";
 import { SCHEMA_VERSION } from "./data/constants.js";
 import { newSessionId } from "./utils/ids.js";
 import { parseNum } from "./utils/numbers.js";
@@ -143,6 +144,10 @@ export function migrateSettings(s) {
   if (s.settings.keepAwake === undefined) s.settings.keepAwake = true;
   /* som (beep) ao fim do descanso; ligado por padrão */
   if (typeof s.settings.beepEnabled !== "boolean") s.settings.beepEnabled = true;
+  /* lembrete de backup: a cada N treinos (3, 7 ou 14; 0 = desligado; padrão 7).
+     Campos opcionais — arquivos antigos só ganham o padrão, sem subir SCHEMA_VERSION. */
+  s.settings.backupEvery = normalizeBackupEvery(s.settings.backupEvery);
+  if (typeof s.settings.backupSnoozedUntil !== "string" || Number.isNaN(new Date(s.settings.backupSnoozedUntil).getTime())) s.settings.backupSnoozedUntil = null;
   if (s.settings.avatarUrl === undefined) s.settings.avatarUrl = null;
   if (s.settings.displayName === undefined) s.settings.displayName = "";
 }

@@ -15,8 +15,8 @@ export const PIN_MAX_FAILS = 5;
 
 const pinKey = username => PIN_KEY_PREFIX + String(username || "").trim().toLowerCase();
 
-const toB64 = bytes => btoa(String.fromCharCode(...bytes));
-const fromB64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+export const toB64 = bytes => btoa(String.fromCharCode(...bytes));
+export const fromB64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
 
 export function pinSupported() {
   return typeof crypto !== "undefined" && !!crypto.subtle && !!crypto.getRandomValues;
@@ -32,13 +32,13 @@ export function isWeakPin(pin) {
   return Math.abs(step) === 1 && d[2] - d[1] === step && d[3] - d[2] === step;
 }
 
-async function derive(pin, salt, iterations) {
+export async function derive(pin, salt, iterations) {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveBits"]);
   const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations }, key, 256);
   return new Uint8Array(bits);
 }
 
-function sameBytes(a, b) {
+export function sameBytes(a, b) {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];

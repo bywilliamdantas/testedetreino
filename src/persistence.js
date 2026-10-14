@@ -1,6 +1,8 @@
 import { storageKey } from "./config.js";
 import { initExIdCounter, initRestCounter } from "./counters.js";
 import { migrateActiveSession, migrateSessionSnapshots, migrateSessions, migrateSettings, migrateWorkouts } from "./data-migrations.js";
+import { isQuotaError } from "./storage/idb.js";
+import { flushNow, flushSessions, isBlocked, loadFromCore, readCoreRaw, resetSessionStore, saveCoreAndJournal, scheduleFlush, sessionsMode, setFlushListener } from "./storage/session-store.js";
 import { store } from "./store.js";
 import { showToast } from "./ui/toast.js";
 
@@ -29,7 +31,16 @@ export async function withRetry(fn, attempts = 3, baseDelay = 250) {
 }
 
 export async function loadData() {
+  resetSessionStore();
   try {
+    const coreRaw = readCoreRaw();
+    // núcleo presente = histórico no IndexedDB (ver storage/session-store.js)
+    if (coreRaw && await loadFromCore(coreRaw)) {
+      store.loadFailed = false;
+      initExIdCounter();
+      initRestCounter();
+      return;
+    }
     const raw = await withRetry(() => window.localStorage.getItem(storageKey()), 3, 200);
     if (raw) {
       const parsed = JSON.parse(raw);
@@ -53,7 +64,57 @@ export async function loadData() {
   initRestCounter();
 }
 
-export async function persist() {
+/* Resultado de cada gravação em lote no IndexedDB → indicador de sincronização. */
+setFlushListener((ok, err) => {
+  store.saveInFlight = false;
+  if (ok) {
+    updateSyncUI("ok");
+    return;
+  }
+  const full = isQuotaError(err);
+  updateSyncUI(full ? "full" : "err");
+  if (full) showToast("Armazenamento cheio — exporte um backup");
+});
+
+/* Modo IndexedDB: parte síncrona pequena (núcleo + diário) e gravação das
+   sessões depois, com debounce. `{ flush: true }` espera o IndexedDB confirmar
+   (importação, logout) — o restante nunca espera. */
+async function persistIdb(opts) {
+  store.saveInFlight = true;
+  updateSyncUI("busy");
+  if (isBlocked()) {
+    store.saveInFlight = false;
+    updateSyncUI("err");
+    return;
+  }
+  try {
+    await withRetry(() => saveCoreAndJournal(), 3, 250);
+  } catch (e) {
+    store.saveInFlight = false;
+    const full = isQuotaError(e);
+    updateSyncUI(full ? "full" : "err");
+    if (full) showToast("Armazenamento cheio — exporte um backup");
+    return;
+  }
+  if (opts && opts.flush) return flushNow();
+  scheduleFlush();
+}
+
+/* Ao esconder/fechar o app: grava o que der de forma síncrona e inicia a
+   gravação das sessões (o diário cobre o caso de o iOS encerrar antes). */
+export function persistOnHide() {
+  if (sessionsMode() !== "idb" || isBlocked()) return false;
+  try {
+    saveCoreAndJournal();
+  } catch (e) {}
+  flushNow();
+  return true;
+}
+
+export { flushSessions };
+
+export async function persist(opts) {
+  if (sessionsMode() === "idb") return persistIdb(opts);
   store.saveInFlight = true;
   updateSyncUI("busy");
   try {

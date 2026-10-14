@@ -76,10 +76,10 @@ export function renderBodyOverlay(root) {
   };
   const lastW = lastOf("weight");
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <div class="sheet" role="dialog" aria-modal="true" aria-label="Registrar peso e medidas">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-date">Peso e medidas</div>
+      <div class="sheet-date" id="sheetTitle">Peso e medidas</div>
       <button class="icon-btn" id="sheetClose" aria-label="fechar">${ICONS.close}</button>
     </div>
     <div class="body-form">

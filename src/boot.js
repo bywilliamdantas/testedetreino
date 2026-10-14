@@ -3,12 +3,13 @@ import { refreshBackupInfo, takeAutoBackup } from "./backup/auto-backup.js";
 import { requestPersistentStorage } from "./backup/storage-status.js";
 import { initAudioUnlock } from "./audio/beep.js";
 import { storageKey } from "./config.js";
-import { loadData, persist, storageAvailable } from "./persistence.js";
+import { loadData, persist, persistOnHide, storageAvailable } from "./persistence.js";
 import { checkReminder } from "./reminders.js";
 import { getTabFromHash, initRouter } from "./router.js";
 import { store } from "./store.js";
 import { loadAvatarIntoStore } from "./storage/avatar.js";
 import { migrateLegacyStorage } from "./storage/legacy-migration.js";
+import { migrateSessionsToIdb, sessionsMode } from "./storage/session-store.js";
 import { applyTheme, getThemePref } from "./theme.js";
 import { showToast } from "./ui/toast.js";
 import { backgroundUpdateCheck, checkForUpdate, reloadOnce } from "./update/sw-update.js";
@@ -25,6 +26,9 @@ export async function bootApp() {
   if (app) app.innerHTML = `<div class="loading">carregando…</div>`;
   await loadData();
   await migrateLegacyStorage();
+  try {
+    await migrateSessionsToIdb(); // histórico → IndexedDB (idempotente; não apaga a cópia antiga)
+  } catch (e) {}
   await loadAvatarIntoStore();
   await refreshBackupInfo();
   await takeAutoBackup(false);
@@ -64,6 +68,7 @@ export async function bootApp() {
     renderLogin();
   }
   document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden" && store.currentUser) persistOnHide();
     if (document.visibilityState === "visible" && store.currentUser) {
       enforceSessionExpiry();
       if (!store.currentUser) return;
@@ -83,9 +88,17 @@ export async function bootApp() {
   }, 5 * 60 * 1000);
   window.addEventListener("beforeunload", () => {
     if (!store.currentUser) return;
+    if (sessionsMode() === "idb") {
+      persistOnHide();
+      return;
+    }
     try {
       window.localStorage.setItem(storageKey(), JSON.stringify(store.data));
     } catch (e) {}
+  });
+  // no iOS o app costuma ser encerrado sem beforeunload: grava ao esconder
+  window.addEventListener("pagehide", () => {
+    if (store.currentUser) persistOnHide();
   });
   if (window.matchMedia) {
     const mq = window.matchMedia("(prefers-color-scheme: light)");

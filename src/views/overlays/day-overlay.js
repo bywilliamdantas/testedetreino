@@ -5,6 +5,7 @@ import { ICONS } from "../../data/icons.js";
 import { exThumbHtml } from "../../exercises/exercise-visuals.js";
 import { findExercise, lastLoggedValue, restForExercise } from "../../exercises/exercises.js";
 import { persist } from "../../persistence.js";
+import { markSessionsDirty } from "../../storage/session-store.js";
 import { checkPR, exercisePRs, suggestNext } from "../../stats/prs.js";
 import { store } from "../../store.js";
 import { colorFor, toneVars } from "../../ui/helpers.js";
@@ -14,7 +15,7 @@ import { fmtClock, fmtDuration, fmtW, fromDisp, toDisp, todayKey, unit, weightSt
 import { newSessionId } from "../../utils/ids.js";
 import { isCardio, isWork, parseNum, roundToStep } from "../../utils/numbers.js";
 import { activeElapsedMs, syncWakeLock } from "../../workouts/active-session.js";
-import { computeSessionIntensity, sessionDurationMs, sessionHasData, sessionsFor, snapshotExercise, stampSnapshot } from "../../workouts/sessions.js";
+import { computeSessionIntensity, sessionDurationMs, sessionHasData, sessionsFor, stampSnapshot } from "../../workouts/sessions.js";
 import { previousSetValues, shouldStartRest } from "../../workouts/rest-rules.js";
 import { workoutLabel } from "../../workouts/workouts.js";
 import { render } from "../render.js";
@@ -233,8 +234,8 @@ export function renderDayOverlay(root) {
     <div class="ssh-top">
       <span class="ssh-badge" style="${toneVars(color)}">${w.isRest ? ICONS.moonSmall : letter}</span>
       <div class="ssh-titles">
-        <div class="ssh-name">${escapeHtml(w.name || workoutLabel(letter))}</div>
-        <div class="ssh-date">${isToday ? "Hoje" : escapeHtml(dateLabel)}${hasActiveHere ? ` · <span class="ssh-live">em andamento</span>` : ""}</div>
+        <div class="ssh-name" id="sheetTitle"><span class="sr-only">Registrar treino: </span>${escapeHtml(w.name || workoutLabel(letter))}</div>
+        <div class="ssh-date" id="sheetSubtitle">${isToday ? "Hoje" : escapeHtml(dateLabel)}${hasActiveHere ? ` · <span class="ssh-live">em andamento</span>` : ""}</div>
       </div>
       <button class="icon-btn" id="sheetClose" aria-label="fechar">${ICONS.close}</button>
     </div>
@@ -245,7 +246,7 @@ export function renderDayOverlay(root) {
     </div>` : ""}
   </div>`;
   let html = `<div class="sheet-backdrop" id="sheetBackdrop"></div>`;
-  html += `<div class="sheet" role="dialog" aria-modal="true" aria-label="Registrar treino" id="daySheet">
+  html += `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle sheetSubtitle" id="daySheet">
     <div class="sheet-handle" id="sheetHandle"></div>
     ${sessionHeadHtml}
     <div class="sheet-chips">
@@ -515,6 +516,7 @@ export function renderDayOverlay(root) {
     if (note) sess.note = note;else delete sess.note;
     stampSnapshot(sess);
     store.data.sessions[dk] = arr;
+    markSessionsDirty(dk);
     haptic([10, 40, 10]);
     closeOverlay();
     render();
@@ -556,6 +558,7 @@ export function autoSaveOverlay() {
   if (!sess.startedAt) sess.startedAt = startedAt;
   stampSnapshot(sess);
   store.data.sessions[dateKey] = arr;
+  markSessionsDirty(dateKey);
   persist();
 }
 
@@ -692,6 +695,7 @@ export async function undoToday() {
   if (arr.length === 0) return;
   arr.pop();
   if (arr.length === 0) delete store.data.sessions[dateKey];else store.data.sessions[dateKey] = arr;
+  markSessionsDirty(dateKey);
   const a = store.data.activeSession;
   if (a.startedDate === dateKey && a.state !== "idle") {
     a.state = "idle";

@@ -19,10 +19,10 @@ export async function openBackupsSheet() {
 export function renderBackupsOverlay(root) {
   const list = store.backupList;
   root.innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <div class="sheet" role="dialog" aria-modal="true" aria-label="Backups automáticos">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div class="sheet-date">Backups automáticos</div>
+      <div class="sheet-date" id="sheetTitle">Backups automáticos</div>
       <button class="icon-btn" id="sheetClose" aria-label="fechar">${ICONS.close}</button>
     </div>
     <p class="backups-note">

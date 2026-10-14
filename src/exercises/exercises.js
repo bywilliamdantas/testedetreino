@@ -1,5 +1,7 @@
 import { EXERCISE_LIBRARY } from "../data/exercise-library.js";
+import { buildPrimaryGroupMap } from "../data/exercise-primary-group.js";
 import { store } from "../store.js";
+import { escapeAttr, escapeHtml } from "../utils/dom.js";
 import { isCardio, isWork } from "../utils/numbers.js";
 import { sessionsFor } from "../workouts/sessions.js";
 
@@ -120,6 +122,19 @@ export function isSelectableGroup(g) {
   return typeof g === "string" && SELECTABLE_GROUPS.includes(g);
 }
 
+/* Exercício próprio = tem nome e esse nome não está na biblioteca. */
+export function isCustomExerciseName(name) {
+  const n = String(name || "").trim().toLowerCase();
+  return !!n && !getLibraryNameSet().has(n);
+}
+
+/* <option>s do seletor de grupo muscular (o mesmo no picker e na edição do treino). */
+export function groupOptionsHtml(current) {
+  const cur = current || "";
+  return `<option value="">Outros (sem grupo)</option>
+      ${SELECTABLE_GROUPS.map(g => `<option value="${escapeAttr(g)}" ${g === cur ? "selected" : ""}>${escapeHtml(g)}</option>`).join("")}`;
+}
+
 /* Grupo já escolhido para um exercício próprio com esse nome (em qualquer treino), se houver. */
 export function customGroupFor(name) {
   const n = String(name || "").trim().toLowerCase();
@@ -131,16 +146,11 @@ export function customGroupFor(name) {
   return null;
 }
 
-/* Grupo muscular para as estatísticas. Prioridade: escolha explícita (ex.group) > biblioteca > "Outros".
+/* Grupo muscular para as estatísticas. Prioridade: escolha explícita (ex.group) > biblioteca (grupo PRINCIPAL, ver exercise-primary-group.js) > "Outros".
    `ex` é opcional (aceita também o item do snapshot da sessão). */
 export function muscleGroupOf(name, ex) {
   if (ex && isSelectableGroup(ex.group)) return ex.group;
   if (!name) return "Outros";
-  if (!store._libGroupMap) {
-    store._libGroupMap = {};
-    Object.keys(EXERCISE_LIBRARY).forEach(g => EXERCISE_LIBRARY[g].forEach(n => {
-      store._libGroupMap[n.toLowerCase()] = g;
-    }));
-  }
+  if (!store._libGroupMap) store._libGroupMap = buildPrimaryGroupMap();
   return store._libGroupMap[String(name).trim().toLowerCase()] || "Outros";
 }
