@@ -120,6 +120,18 @@ self.addEventListener("message", (event) => {
   }
 });
 
+/* ---------- tocar na notificação do lembrete: foca o app aberto ou abre um novo ---------- */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const list = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of list) {
+      if ("focus" in c) return c.focus();
+    }
+    if (self.clients.openWindow) return self.clients.openWindow(self.registration.scope);
+  })());
+});
+
 /* ---------- fetch: cache na hora, atualizando em segundo plano ---------- */
 self.addEventListener("fetch", (event) => {
   if(event.request.method !== "GET") return;
