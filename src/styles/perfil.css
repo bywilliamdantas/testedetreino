@@ -138,7 +138,7 @@
   border: none;
   border-bottom: 1px solid var(--divider);
   padding: 14px 2px;
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   font-family: inherit;
@@ -182,7 +182,7 @@
 }
 .ms-date {
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 14px;
   width: 42px;
   flex-shrink: 0;
 }

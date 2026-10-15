@@ -109,23 +109,26 @@ export function render() {
         ? "dia de recuperação"
         : hasActive
           ? "toque em Detalhes para registrar"
-          : "pronto para começar?";
+          : heroW.exercises && heroW.exercises.length
+            ? "pronto para começar?"
+            : "adicione exercícios para começar";
+  const heroEmpty = !hasActive && todayCount === 0 && !heroW.isRest && !(heroW.exercises && heroW.exercises.length);
   let heroActionsHtml;
   if (!hasActive) {
     heroActionsHtml = `<div class="hero-v2-actions">
       <button type="button" class="hero-v2-btn primary" id="startBtn">${ICONS.playSm} Iniciar</button>
       <button type="button" class="hero-v2-btn ghost" id="statusBtn">${ICONS.calendarSmall} Detalhes</button>
-    </div>`;
+    </div>${heroEmpty ? `<button type="button" class="hero-empty-cta" id="buildWorkoutBtn">${ICONS.plus} Montar este treino</button>` : ""}`;
   } else if (isRunning) {
     heroActionsHtml = `<div class="hero-v2-actions">
-      <button type="button" class="hero-v2-btn primary" id="stopBtn">${ICONS.pause} Pausar</button>
-      <button type="button" class="hero-v2-btn ghost" id="endBtn">Finalizar</button>
+      <button type="button" class="hero-v2-btn primary" id="stopBtn">${ICONS.pauseSm} Pausar</button>
+      <button type="button" class="hero-v2-btn ghost" id="endBtn">${ICONS.check} Finalizar</button>
     </div>
     <button type="button" class="hero-v2-link" id="statusBtn">Ver detalhes do treino</button>`;
   } else {
     heroActionsHtml = `<div class="hero-v2-actions">
       <button type="button" class="hero-v2-btn primary" id="startBtn">${ICONS.playSm} Retomar</button>
-      <button type="button" class="hero-v2-btn ghost" id="endBtn">Finalizar</button>
+      <button type="button" class="hero-v2-btn ghost" id="endBtn">${ICONS.check} Finalizar</button>
     </div>
     <button type="button" class="hero-v2-link" id="statusBtn">Ver detalhes do treino</button>`;
   }
@@ -154,7 +157,7 @@ export function render() {
     ${heroSecondaryRowHtml}
   </div>`;
   const statsRowHtml = `<div class="stats-row-v3">
-    <div class="stat-card-v3 streak">
+    <div class="stat-card-v3 streak${streak === 0 ? " zero" : ""}">
       <span class="stat-mini">${ICONS.flame}</span>
       <span class="stat-num" data-count="${streak}">0</span>
       <span class="stat-label">${streak === 1 ? "semana seguida" : "semanas seguidas"}</span>
@@ -243,6 +246,8 @@ export function render() {
             <button class="progress-btn" data-role="viewprogress" data-exid="${escapeAttr(ex.id)}" data-name="${escapeAttr(ex.name || "Exercício")}" ${hasHist ? "" : "disabled"} aria-label="Ver progresso">${ICONS.chart}</button>
             <button class="ex-del" data-role="delex" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" aria-label="remover exercício">${ICONS.close}</button>
           </div>
+          <details class="ex-more" data-exid="${escapeAttr(ex.id)}"${store.exMoreOpen && store.exMoreOpen.has(ex.id) ? " open" : ""}>
+          <summary class="ex-more-summary"><span>Mais opções</span><span class="ex-more-tags">${cardio ? "Cardio" : "Força"}${ex.ss ? " · Superset" : ""}${ex.link ? " · Link" : ""}</span></summary>
           <div class="ex-type-toggle">
             <button class="ex-type-btn ${cardio ? "" : "active"}" data-role="extype" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" data-type="strength">${ICONS.dumbbell} Força</button>
             <button class="ex-type-btn ${cardio ? "active" : ""}" data-role="extype" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" data-type="cardio">${ICONS.cardio} Cardio</button>
@@ -263,18 +268,19 @@ export function render() {
             ${exIdx < w.exercises.length - 1 ? `<button class="tool-btn ${ex.ss ? "active" : ""}" data-role="exss" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" aria-pressed="${!!ex.ss}">Superset com o próximo</button>` : ""}
             <button class="tool-btn ${ex.link ? "active" : ""}" data-role="exlink" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" aria-label="link de vídeo ou técnica">${ICONS.link} Link</button>
           </div>
+          </details>
           ${
             cardio
               ? `
             <div class="ex-row-bottom">
-              <label class="ex-field"><span>minutos</span><input data-role="exmins" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" value="${escapeAttr(ex.mins || "")}" placeholder="30" inputmode="numeric" aria-label="Minutos"></label>
+              <label class="ex-field"><span>Minutos</span><input data-role="exmins" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" value="${escapeAttr(ex.mins || "")}" placeholder="30" inputmode="numeric" aria-label="Minutos"></label>
             </div>
           `
               : `
             <div class="ex-row-bottom">
-              <label class="ex-field"><span>séries</span><input data-role="exsets" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" value="${escapeAttr(ex.sets)}" placeholder="4" inputmode="numeric" aria-label="Séries"></label>
-              <label class="ex-field"><span>reps</span><input data-role="exreps" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" value="${escapeAttr(ex.reps)}" placeholder="12" inputmode="numeric" aria-label="Repetições"></label>
-              <label class="ex-field"><span>descanso (s)</span><input data-role="exrest" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" value="${escapeAttr(ex.rest || "")}" placeholder="90" inputmode="numeric" aria-label="Descanso em segundos"></label>
+              <label class="ex-field"><span>Séries</span><input data-role="exsets" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" value="${escapeAttr(ex.sets)}" placeholder="3" inputmode="numeric" aria-label="Séries"></label>
+              <label class="ex-field"><span>Reps</span><input data-role="exreps" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" value="${escapeAttr(ex.reps)}" placeholder="12" inputmode="numeric" aria-label="Repetições"></label>
+              <label class="ex-field"><span>Descanso (s)</span><input data-role="exrest" data-letter="${escapeAttr(key)}" data-exid="${escapeAttr(ex.id)}" value="${escapeAttr(ex.rest || "")}" placeholder="90" inputmode="numeric" aria-label="Descanso em segundos"></label>
             </div>
           `
           }
@@ -311,7 +317,12 @@ export function render() {
     </div>`
         : "";
     const lastDoneLetter = todayArr.length ? todayArr[todayArr.length - 1].letter : null;
-    workoutsHtml = filterChipsHtml;
+    const reordering = !!store.treinosReorder && store.data.order.length > 1;
+    workoutsHtml =
+      filterChipsHtml +
+      (store.data.order.length > 1
+        ? `<div class="wl-toolbar"><button type="button" class="wl-toolbar-btn${reordering ? " active" : ""}" id="reorderToggleBtn" aria-pressed="${reordering}">${reordering ? `${ICONS.check} Concluir` : "Reordenar"}</button></div>`
+        : "");
     store.data.order.forEach((key, idx) => {
       const w = store.data.workouts[key];
       const cat = categoryForWorkout(w);
@@ -322,21 +333,21 @@ export function render() {
         ? "Dia de descanso"
         : `${estMs ? fmtDuration(estMs) + " · " : ""}${w.exercises.length} exercício${w.exercises.length === 1 ? "" : "s"}`;
       const doneToday = key === lastDoneLetter;
-      workoutsHtml += `<div class="workout-list-card" data-role="openworkout" data-letter="${escapeAttr(key)}" role="button" tabindex="0">
+      workoutsHtml += `<div class="workout-list-card${reordering ? " reordering" : ""}" data-role="openworkout" data-letter="${escapeAttr(key)}" role="button" tabindex="0">
         <span class="wl-icon" style="${toneVars(color, "22")}">${w.isRest ? ICONS.moonSmall : ICONS.dumbbell}</span>
         <span class="wl-info">
           <span class="wl-name">${escapeHtml(w.name)}</span>
           <span class="wl-meta">${metaTxt}</span>
         </span>
         ${
-          store.data.order.length > 1
+          reordering
             ? `<span class="wl-reorder">
           <button type="button" class="reorder-btn" data-role="moveup" data-letter="${escapeAttr(key)}" ${idx === 0 ? "disabled" : ""} aria-label="mover para cima">${ICONS.up}</button>
           <button type="button" class="reorder-btn" data-role="movedown" data-letter="${escapeAttr(key)}" ${idx === store.data.order.length - 1 ? "disabled" : ""} aria-label="mover para baixo">${ICONS.down}</button>
         </span>`
             : ""
         }
-        ${doneToday ? `<span class="wl-check">${ICONS.checkSm}</span>` : `<span class="wl-arrow">${ICONS.right}</span>`}
+        ${reordering ? "" : doneToday ? `<span class="wl-check">${ICONS.checkSm}</span>` : `<span class="wl-arrow">${ICONS.right}</span>`}
       </div>`;
     });
     workoutsHtml += `<div class="row-2">
@@ -352,7 +363,7 @@ export function render() {
     <div class="legend">
       ${legendWorkouts.map((l) => `<div class="legend-item"><span class="legend-dot" style="${toneVars(colorFor(l, store.data.order))}"></span>${l}</div>`).join("")}
       ${hasRest ? `<div class="legend-item"><span class="legend-dot" style="${toneVars(REST_COLOR)}"></span>descanso</div>` : ""}
-      <div class="legend-item"><span class="legend-dot off"></span>não treinou</div>
+
     </div>
     ${buildMonthCalendar(store.historyMonth)}
   </div>`;

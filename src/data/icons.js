@@ -39,6 +39,7 @@ export const ICONS = {
   play: lucideSvg(34, "play"),
   playSm: lucideSvg(16, "play"),
   pause: lucideSvg(34, "pause"),
+  pauseSm: lucideSvg(16, "pause"),
   copy: lucideSvg(13, "copy"),
   link: lucideSvg(13, "link"),
   trophy: lucideSvg(14, "trophy"),

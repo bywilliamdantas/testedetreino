@@ -9,6 +9,8 @@ export const store = {
   activeTab: "inicio",
   treinosView: "list",
   treinosFilter: "all",
+  treinosReorder: false,
+  exMoreOpen: null,
   treinosEditKey: null,
   perfilOpen: false,
   perfilEditingName: false,

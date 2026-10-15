@@ -17,7 +17,7 @@ export function renderBodyCard() {
   const list = bodySorted();
   let inner;
   if (!list.length) {
-    inner = `<div class="sheet-empty">Registre seu peso e medidas para acompanhar a evolução.</div>`;
+    inner = `<div class="sheet-empty"><span class="sheet-empty-icon">${ICONS.user}</span>Registre seu peso e medidas para acompanhar a evolução.</div>`;
   } else {
     const withW = list.filter((e) => e.weight != null);
     let head = "";

@@ -53,6 +53,15 @@ export function attachHandlers() {
         openDaySheet(dateKey);
       }
     });
+  const buildWorkoutBtn = $("buildWorkoutBtn");
+  if (buildWorkoutBtn)
+    buildWorkoutBtn.addEventListener("click", () => {
+      haptic(6);
+      const arr = sessionsFor(todayKey());
+      store.treinosEditKey = arr.length ? arr[arr.length - 1].letter : nextWorkoutLetter();
+      store.treinosView = "edit";
+      goTab("treinos", { keepWorkoutView: true });
+    });
   const startBtn = $("startBtn");
   if (startBtn && !startBtn.disabled)
     startBtn.addEventListener("click", () => {
@@ -283,8 +292,23 @@ export function attachHandlers() {
       await persist();
     });
   });
+  const reorderToggleBtn = document.getElementById("reorderToggleBtn");
+  if (reorderToggleBtn)
+    reorderToggleBtn.addEventListener("click", () => {
+      haptic(6);
+      store.treinosReorder = !store.treinosReorder;
+      render();
+    });
+  document.querySelectorAll("details.ex-more").forEach((el) => {
+    el.addEventListener("toggle", () => {
+      if (!store.exMoreOpen) store.exMoreOpen = new Set();
+      if (el.open) store.exMoreOpen.add(el.dataset.exid);
+      else store.exMoreOpen.delete(el.dataset.exid);
+    });
+  });
   document.querySelectorAll('[data-role="openworkout"]').forEach((el) => {
     const open = () => {
+      if (store.treinosReorder) return;
       haptic(6);
       store.treinosEditKey = el.dataset.letter;
       store.treinosView = "edit";

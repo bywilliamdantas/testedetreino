@@ -16,15 +16,24 @@ import { newSessionId } from "../../utils/ids.js";
 import { isCardio, isWork, parseNum, roundToStep } from "../../utils/numbers.js";
 import { activeElapsedMs, syncWakeLock } from "../../workouts/active-session.js";
 import { computeSessionIntensity, sessionDurationMs, sessionHasData, sessionsFor, stampSnapshot } from "../../workouts/sessions.js";
-import { previousSetValues, shouldStartRest } from "../../workouts/rest-rules.js";
+import { DEFAULT_SETS, previousSetValues, shouldStartRest } from "../../workouts/rest-rules.js";
 import { workoutLabel } from "../../workouts/workouts.js";
 import { render } from "../render.js";
 import { closeOverlay, renderOverlay } from "./overlay-manager.js";
 import { startRestTimer } from "./rest-timer.js";
 
+const HINT_KEY = "gym-hint-settype-dismissed";
+function hintDismissed() {
+  try {
+    return localStorage.getItem(HINT_KEY) === "1";
+  } catch (e) {
+    return false;
+  }
+}
+
 export function ensureSetsForExercise(log, exId, defaultSets) {
   if (!Array.isArray(log[exId])) {
-    const n = Math.max(1, parseInt(defaultSets, 10) || 1);
+    const n = Math.max(1, parseInt(defaultSets, 10) || DEFAULT_SETS);
     log[exId] = Array.from(
       {
         length: n
@@ -274,7 +283,7 @@ export function renderDayOverlay(root) {
         })
         .join("")}
     </div>
-    ${hasExercises ? `<p class="sheet-hint">Toque no número da série para marcar aquecimento (A), drop set (D) ou até a falha (F). Aquecimento não entra nas estatísticas.</p>` : ""}
+    ${hasExercises && !hintDismissed() ? `<p class="sheet-hint" id="sheetHint"><span>Toque no número da série para marcar aquecimento (A), drop set (D) ou até a falha (F). Aquecimento não entra nas estatísticas.</span><button type="button" class="sheet-hint-dismiss" id="sheetHintDismiss">Entendi</button></p>` : ""}
     ${exercisesHtml}
     ${
       hasExercises
@@ -296,6 +305,14 @@ export function renderDayOverlay(root) {
   );
   document.getElementById("sheetBackdrop").addEventListener("click", closeOverlay);
   document.getElementById("sheetClose").addEventListener("click", closeOverlay);
+  const hintBtn = document.getElementById("sheetHintDismiss");
+  if (hintBtn)
+    hintBtn.addEventListener("click", () => {
+      try {
+        localStorage.setItem(HINT_KEY, "1");
+      } catch (e) {}
+      document.getElementById("sheetHint")?.remove();
+    });
   if (store.sheetClockInterval) {
     clearInterval(store.sheetClockInterval);
     store.sheetClockInterval = null;
@@ -449,7 +466,7 @@ export function renderDayOverlay(root) {
         }
         if (ex && ex.ss) {
           if (!prMsg) showToast("Superset — vá para o próximo exercício");
-        } else if (shouldStartRest(ex, sets, setidx)) {
+        } else if (shouldStartRest(ex, sets, setidx, !!root.querySelector(".sheet-set:not(.done)"))) {
           startRestTimer(exid);
         }
       } else {
@@ -647,7 +664,7 @@ export function renderStrengthRow(ex, log, dateKey, linked) {
               aria-label="repetições">
             <button class="step-btn" data-role="rplus" data-exid="${escapeAttr(ex.id)}" data-setidx="${i}" aria-label="aumentar reps">+</button>
           </div>
-          <button class="sheet-set-check" data-role="toggleSet" data-exid="${escapeAttr(ex.id)}" data-setidx="${i}" aria-label="marcar série ${i + 1}">${ICONS.checkSm}</button>
+          <button class="sheet-set-check" data-role="toggleSet" data-exid="${escapeAttr(ex.id)}" data-setidx="${i}" aria-label="marcar série ${i + 1}">${ICONS.check}</button>
         </div>${i > 0 ? `<button type="button" class="set-repeat" data-role="repeatprev" data-exid="${escapeAttr(ex.id)}" data-setidx="${i}" aria-label="repetir peso e reps da série ${i}">${ICONS.refresh}<span>repetir anterior</span></button>` : ""}`;
         })
         .join("")}
@@ -677,7 +694,7 @@ export function renderCardioRow(ex, log, dateKey, linked) {
             <span class="step-unit">min</span>
             <button class="step-btn" data-role="mplus" data-exid="${escapeAttr(ex.id)}" data-setidx="${i}" aria-label="aumentar minutos">+</button>
           </div>
-          <button class="sheet-set-check" data-role="toggleSet" data-exid="${escapeAttr(ex.id)}" data-setidx="${i}" aria-label="marcar ${i + 1}">${ICONS.checkSm}</button>
+          <button class="sheet-set-check" data-role="toggleSet" data-exid="${escapeAttr(ex.id)}" data-setidx="${i}" aria-label="marcar ${i + 1}">${ICONS.check}</button>
         </div>`;
         })
         .join("")}

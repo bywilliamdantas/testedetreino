@@ -7,7 +7,7 @@
   gap: 12px;
 }
 .greet-hello {
-  font-size: 27px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -98,7 +98,7 @@
   max-width: 60%;
 }
 .hero-v2-name {
-  font-size: 23px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.01em;
   margin-bottom: 4px;
@@ -121,7 +121,7 @@
   min-width: 0;
   height: 48px;
   border-radius: 14px;
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 700;
   font-family: inherit;
   display: flex;
@@ -160,7 +160,7 @@
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   font-family: inherit;
   padding-top: 12px;
@@ -312,7 +312,7 @@
 }
 .lr-name {
   display: block;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   margin-top: 2px;
 }
@@ -382,3 +382,23 @@
 }
 
 /* ---------- dias da semana (week dots) ---------- */
+
+/* ---------- Home: treino sem exercícios ---------- */
+.hero-empty-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 10px;
+  border: 1px dashed currentColor;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: inherit;
+  opacity: 0.85;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}

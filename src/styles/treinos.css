@@ -266,8 +266,8 @@
 .ex-field span {
   font-size: 12px;
   color: var(--text-muted);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  white-space: nowrap;
   padding-left: 2px;
   font-weight: 600;
 }
@@ -282,9 +282,14 @@
   -webkit-appearance: none;
   width: 100%;
 }
+.ex-field input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+  font-weight: 400;
+}
 .rest-note {
   text-align: center;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   padding: 14px 4px 2px;
 }
@@ -324,7 +329,7 @@
   background: var(--surface-3);
   border: 1px dashed var(--card-border);
   color: var(--text-label);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   border-radius: var(--r-sm);
   padding: 10px;
@@ -398,7 +403,6 @@
 .cal-month-label {
   font-size: 15px;
   font-weight: 700;
-  text-transform: capitalize;
 }
 .cal-nav {
   background: var(--surface-3);
@@ -440,12 +444,12 @@
   aspect-ratio: 1;
   border-radius: var(--r-sm);
   border: none;
-  background: var(--dot-off);
-  color: var(--text-label);
+  background: transparent;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12.5px;
+  font-size: 12px;
   -webkit-appearance: none;
   transition: transform 0.12s var(--ease);
   position: relative;
@@ -776,7 +780,7 @@ input[type="file"] {
   white-space: nowrap;
 }
 .ssh-date {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   text-transform: capitalize;
   margin-top: 2px;
@@ -820,7 +824,7 @@ input[type="file"] {
   padding: 12px;
 }
 .sheet-ex-name {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   margin-bottom: 4px;
   display: flex;
@@ -908,6 +912,9 @@ div.sheet-set-num {
 .step-group.compact .step-btn {
   width: var(--tap);
 }
+.step-group.compact .step-value {
+  min-width: 36px;
+}
 .step-btn {
   width: 32px;
   height: var(--tap);
@@ -958,10 +965,22 @@ div.sheet-set-num {
 }
 .sheet-empty {
   text-align: center;
-  font-size: 12.5px;
+  font-size: 13px;
+  line-height: 1.45;
   color: var(--text-muted);
   padding: 18px 10px;
   margin-bottom: var(--s3);
+}
+.sheet-empty-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 .sheet-actions {
   display: flex;
@@ -1025,7 +1044,7 @@ div.sheet-set-num {
   font-weight: 600;
 }
 .rest-time {
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -1058,7 +1077,7 @@ div.sheet-set-num {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-label);
   padding: 8px 4px;
   border-bottom: 1px solid var(--divider);
@@ -1082,7 +1101,7 @@ div.sheet-set-num {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 13.5px;
+  font-size: 14px;
   gap: 12px;
 }
 .label-stack {
@@ -1187,7 +1206,7 @@ div.sheet-set-num {
   min-width: 0;
 }
 .sheet-day-session .sds-name {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
 }
 .sheet-day-session .sds-meta {
@@ -1306,7 +1325,7 @@ div.sheet-set-num {
   background: var(--surface-3);
   border: 1px solid var(--card-border);
   color: var(--text-primary);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   text-align: left;
   -webkit-appearance: none;
@@ -1332,7 +1351,7 @@ div.sheet-set-num {
   justify-content: space-between;
   gap: 10px;
   padding: 8px 14px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
 }
@@ -1353,7 +1372,7 @@ div.sheet-set-num {
 }
 .ex-picker-empty {
   text-align: center;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   padding: 20px 10px;
 }
@@ -1421,4 +1440,102 @@ a:focus-visible {
 input:focus-visible,
 textarea:focus-visible {
   outline: none;
+}
+
+/* ---------- Treinos: modo reordenar ---------- */
+.wl-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: -6px 2px 8px;
+}
+.wl-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.wl-toolbar-btn.active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-fg);
+  border-color: transparent;
+}
+.workout-list-card.reordering {
+  cursor: default;
+}
+.workout-list-card.reordering .wl-reorder {
+  flex-direction: row;
+  gap: 0;
+}
+
+/* ---------- Editor: opções secundárias recolhidas ---------- */
+.ex-more {
+  margin: 2px 0 10px;
+  border-radius: var(--r-sm);
+}
+.ex-more-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  list-style: none;
+}
+.ex-more-summary::-webkit-details-marker {
+  display: none;
+}
+.ex-more-summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  margin: -4px 4px 0 0;
+  transition: transform 0.2s var(--ease);
+}
+.ex-more[open] > .ex-more-summary::after {
+  transform: rotate(-135deg);
+  margin-top: 4px;
+}
+.ex-more-tags {
+  margin-left: auto;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.ex-more[open] > .ex-more-summary {
+  margin-bottom: 8px;
+}
+
+/* Editor: nome do exercício em até 2 linhas em vez de cortar com "…" */
+.ex-name-btn .ex-name-text {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  line-height: 1.25;
+}
+/* Modo reordenar: setas maiores e visíveis */
+.workout-list-card.reordering .reorder-btn {
+  border-width: 4px;
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border-radius: 50%;
+}
+.workout-list-card.reordering .reorder-btn:disabled {
+  opacity: 0.3;
 }

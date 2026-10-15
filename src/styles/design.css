@@ -30,6 +30,18 @@ body {
   unicode-range: U+0020, U+002C-002E, U+0030-003A;
 }
 
+/* ---------- fonte de texto fora dos aparelhos Apple (Inter, OFL: src/fonts/inter-OFL.txt) ---------- */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
 /* ---------- tipografia ---------- */
 .tab-title {
   font-size: 32px;
@@ -45,7 +57,7 @@ body {
   color: inherit;
 }
 .greet-date {
-  font-size: 13.5px;
+  font-size: 14px;
   margin-top: 6px;
   text-transform: none;
 }
@@ -71,7 +83,26 @@ body {
   letter-spacing: 0;
 }
 .sheet-hint {
-  font-size: 12.5px;
+  font-size: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  color: var(--text-secondary);
+}
+.sheet-hint-dismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--info);
+  font: inherit;
+  font-weight: 700;
+  padding: 0;
+  min-height: 24px;
+  cursor: pointer;
 }
 .cal-weekdays span,
 .cal-weekdays div {
@@ -86,8 +117,6 @@ body {
 .hero-clock,
 .sg-num,
 .body-big,
-.step-value,
-.sheet-ex-name::after,
 .record-val {
   font-family: var(--font-score);
   font-weight: 400;
@@ -179,7 +208,7 @@ body {
   background: var(--hero-badge-bg);
   border-color: transparent;
   color: var(--white);
-  font-size: 12.5px;
+  font-size: 12px;
   letter-spacing: 0;
   text-transform: none;
   font-weight: 600;
@@ -207,7 +236,7 @@ body {
 .hero-v2-btn {
   height: 52px;
   border-radius: 16px;
-  font-size: 15.5px;
+  font-size: 15px;
 }
 .hero-v2-btn.primary {
   background: linear-gradient(180deg, var(--accent-hi), var(--accent));
@@ -227,7 +256,7 @@ body {
   border-color: transparent;
   color: var(--white);
   min-height: 44px;
-  font-size: 12.5px;
+  font-size: 12px;
 }
 .hero-v2-chip.undo {
   color: var(--danger-on-ink);
@@ -257,6 +286,10 @@ body {
 }
 .stat-card-v3.streak .stat-num {
   color: var(--accent-text);
+}
+.stat-card-v3.streak.zero .stat-num,
+.stat-card-v3.streak.zero .stat-mini {
+  color: var(--text-muted);
 }
 .stat-card-v3.week .stat-num,
 .stat-card-v3.month .stat-num {
@@ -312,8 +345,8 @@ body {
   border-radius: 15px;
 }
 .tab-btn.active .tab-btn-icon {
-  background: var(--ink);
-  color: var(--white);
+  background: var(--tab-active-bg);
+  color: var(--tab-active-fg);
 }
 .tab-btn-label {
   font-size: 12px;
@@ -376,8 +409,13 @@ body {
 .sheet-ex-name::after {
   content: attr(data-progress);
   margin-left: auto;
-  font-size: 17px;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 3px 9px;
 }
 .sheet-ex-name:not([data-progress])::after {
   content: none;
@@ -394,9 +432,17 @@ body {
   width: 40px;
   height: 40px;
   font-size: 13px;
+  background: var(--surface);
+  border: 2px solid var(--card-border);
+  color: var(--text-secondary);
 }
-.sheet-set-check {
-  background: var(--surface-3);
+.sheet-set-check:hover {
+  border-color: var(--ok-border);
+  color: var(--ok);
+}
+.sheet-set.done .sheet-set-check {
+  border-color: var(--ok);
+  box-shadow: 0 4px 12px var(--ok-border);
 }
 .sheet-set-check:active {
   transform: scale(0.92);
@@ -415,7 +461,9 @@ body {
   border-radius: var(--r-ctl);
 }
 .step-value {
-  font-size: 24px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .sheet-set.done .step-group {
   background: var(--ok-bg);
@@ -580,7 +628,6 @@ body {
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  text-transform: capitalize;
 }
 
 /* ---------- ícones e estados vazios ---------- */
@@ -652,9 +699,17 @@ body {
 
 /* ---------- desktop: app centralizado, sem coluna perdida ---------- */
 @media (min-width: 700px) {
+  html,
+  body {
+    background: radial-gradient(circle at 20% 0%, var(--accent-soft), transparent 45%), var(--surface-3);
+    background-attachment: fixed;
+  }
   .screen {
-    box-shadow: 0 0 0 1px var(--card-border);
+    box-shadow: var(--shadow-float);
+    border: 1px solid var(--card-border);
+    border-radius: var(--r-sheet);
     background: var(--bg);
-    min-height: 100vh;
+    margin: 24px 0;
+    min-height: calc(100vh - 48px);
   }
 }

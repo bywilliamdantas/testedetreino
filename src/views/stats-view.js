@@ -11,7 +11,7 @@ export function renderStatsCard() {
   const hasAny = st.sets > 0 || st.cardioMin > 0;
   let body;
   if (!hasAny) {
-    body = `<div class="sheet-empty m-0">Registre séries nos treinos para ver suas estatísticas.</div>`;
+    body = `<div class="sheet-empty m-0"><span class="sheet-empty-icon">${ICONS.chart}</span>Registre séries nos treinos para ver suas estatísticas.</div>`;
   } else {
     const entries = Object.keys(st.groups)
       .map((g) => [g, st.groups[g]])
