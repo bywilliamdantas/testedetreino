@@ -21,7 +21,8 @@ const OPTIONAL = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",
-  "./icons/logo.png"
+  "./icons/logo.png",
+  "./assets/inter-latin.woff2"
 ];
 const ASSETS = CORE.concat(OPTIONAL);
 
