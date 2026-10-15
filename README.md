@@ -217,7 +217,7 @@ Se qualquer um falhar, o comando termina com erro — e o GitHub Actions não pu
 - `progression.test.mjs`: `e1rm`, `suggestNext` (últimas 3 sessões, RPE, deload) e
   `muscleGroupOf` / grupo escolhido em exercício próprio.
 - `migrations.test.mjs`: todas as migrações de `src/data-migrations.js`.
-- `rest-rules.test.mjs`: descanso não inicia na última série, superset, "repetir anterior".
+- `rest-rules.test.mjs`: descanso entre exercícios, não inicia na última série do treino, superset, "repetir anterior".
 - `beep.test.mjs`: beep do timer com um `AudioContext` falso (destravar no toque, tocar,
   não fazer nada sem suporte).
 - `login-hardening.test.mjs` (`node --test`): senha PBKDF2 nos dois formatos (novo e antigo),
@@ -270,6 +270,25 @@ A ilustração do logo (`src/icons-svg.js`) e os PNGs não são do Lucide.
 
 ## Novidades desta versão
 
+### v9.9 — Visual e timer de descanso
+- **Timer de descanso**: agora também inicia depois da última série de um exercício quando ainda
+  há séries pendentes no treino (descanso antes do próximo exercício). Só não inicia na última
+  série do treino inteiro e em supersets (`shouldStartRest` em `src/workouts/rest-rules.js`).
+- **Séries em branco no editor viram 3** (`DEFAULT_SETS`), o mesmo número mostrado de exemplo.
+  Antes o treino era criado com 1 série e toda série era a "última", então o timer nunca aparecia.
+- **Tela do treino**: kg/reps e o contador de séries usam a fonte normal com números de largura
+  fixa (a fonte digital fica só no cronômetro e nos números de destaque); botão de concluir série
+  maior e com contorno; dica de A/D/F com botão *Entendi* (some depois de dispensada).
+- **Home**: ícones de Pausar/Iniciar no mesmo tamanho, ícone em *Finalizar*, streak zerado em
+  cinza, treino sem exercícios ganha o atalho *Montar este treino* (abre o editor).
+- **Treinos**: setas de ordem só no modo *Reordenar*; no editor, Força/Cardio, grupo, ordem,
+  Superset e Link ficam em *Mais opções*; rótulos sem caixa alta e exemplos mais claros.
+- **Histórico**: título "Outubro de 2026" (sem "De"); dias sem treino ficam neutros.
+- **Geral**: aba ativa legível no tema escuro (`--tab-active-bg/fg`), escala de fontes reduzida
+  (sem tamanhos quebrados como 12,5/13,5/14,5px), fonte Inter embutida para Android/PC
+  (`src/fonts/inter-latin.woff2`, licença OFL em `src/fonts/inter-OFL.txt`; no iPhone segue a SF
+  Pro), estados vazios com ícone e moldura no desktop (≥ 700px).
+
 ### v9.9 — Correções de segurança e qualidade
 - **Importação mais segura**: `validateBackup` (`src/backup/validate.js`) agora só aceita chaves de
   treino e ids com letras, números, `_` e `-`. Um arquivo com HTML nesses campos é recusado (ou o
@@ -289,7 +308,7 @@ A ilustração do logo (`src/icons-svg.js`) e os PNGs não são do Lucide.
   em Ajustes → Treino → *Som ao fim do descanso* (`settings.beepEnabled`, padrão ligado; ao ligar
   toca uma prévia). Não apita se o descanso acabou há mais de 3 s (ex.: ao voltar ao app).
 - **Última série não inicia descanso**: marcar a última série da lista do exercício não dispara
-  o timer (`src/workouts/rest-rules.js`). **Superset continua como antes** (nunca inicia timer).
+  o timer (`src/workouts/rest-rules.js`). *(Mudou na v9.9: só a última série do treino inteiro não inicia.)* **Superset continua como antes** (nunca inicia timer).
 - **Repetir anterior**: chip sob cada série (a partir da 2ª, enquanto não marcada) que copia
   peso e reps da série acima. Cardio não tem o botão.
 - **Timer acima da tab bar**: o timer (bottom 10px) cobria a tab bar (bottom 8px) por inteiro.

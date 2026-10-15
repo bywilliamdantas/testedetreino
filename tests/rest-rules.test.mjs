@@ -20,14 +20,21 @@ test("descanso inicia nas séries do meio", () => {
   assert.equal(shouldStartRest({ id: "e1" }, s, 2), true);
 });
 
-test("descanso NÃO inicia na última série", () => {
-  assert.equal(shouldStartRest({ id: "e1" }, sets(4), 3), false);
-  assert.equal(shouldStartRest({ id: "e1" }, sets(1), 0), false);
+test("última série do exercício inicia descanso se ainda há séries pendentes no treino", () => {
+  assert.equal(shouldStartRest({ id: "e1" }, sets(4), 3, true), true);
+  assert.equal(shouldStartRest({ id: "e1" }, sets(1), 0, true), true);
+  assert.equal(shouldStartRest({ id: "e1" }, sets(4), 3), true);
+});
+
+test("descanso NÃO inicia na última série do treino inteiro", () => {
+  assert.equal(shouldStartRest({ id: "e1" }, sets(4), 3, false), false);
+  assert.equal(shouldStartRest({ id: "e1" }, sets(1), 0, false), false);
+  assert.equal(shouldStartRest({ id: "e1" }, sets(4), 1, false), true);
 });
 
 test("exercício sem cadastro (ex indefinido) segue a regra normal", () => {
   assert.equal(shouldStartRest(undefined, sets(3), 0), true);
-  assert.equal(shouldStartRest(undefined, sets(3), 2), false);
+  assert.equal(shouldStartRest(undefined, sets(3), 2, false), false);
 });
 
 test("superset: nunca inicia descanso (comportamento antigo preservado)", () => {
