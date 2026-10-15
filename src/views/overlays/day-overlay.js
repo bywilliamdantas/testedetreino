@@ -614,7 +614,7 @@ export function exExtrasHtml(ex) {
 export function exNameHtml(ex, fallback, linked, completed) {
   const url = safeUrl(ex.link);
   return `<div class="sheet-ex-name${linked ? " linked" : ""}">
-    ${exThumbHtml(ex)}
+    ${exThumbHtml(ex, undefined, { zoom: true })}
     <span class="sheet-ex-title">${escapeHtml(ex.name || fallback)}</span>
     ${linked ? `<span class="ss-badge">superset</span>` : ""}
     ${url ? `<a class="ex-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer" aria-label="Ver vídeo ou técnica">${ICONS.link}</a>` : ""}

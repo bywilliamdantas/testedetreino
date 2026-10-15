@@ -30,7 +30,7 @@ export const STORAGE_KEY = "gym-data",
   }, {
     id: "treinos",
     label: "Treinos",
-    icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 21c-.3 0-.5-.3-.5-.6V7C3 5 4.5 3.5 6.5 3.5S10 5 10 7v3.5c.8-2.7 3-4.5 6-4.5 3.3 0 5.5 2.7 5.5 6 0 1.8-.9 3.1-2.3 3.7-1.7.7-3.2 1.4-4.4 2.8C13.5 20.2 11.5 21 9 21z"/><path d="M13 12.5c1-1.9 3.5-2 4.7-.3"/><path d="M3 8h7"/></svg>`
+    icon: lucideSvg(22, "bicepsFlexed")
   }, {
     id: "historico",
     label: "Histórico",
